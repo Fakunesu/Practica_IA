@@ -9,14 +9,15 @@ public class TreeNPC : MonoBehaviour
     public Transform target;
     public Transform safePlace;
 
-    public float stamina;
+    [SerializeField] float stamina;
     public float speed;
-    private bool recharging;
+    private bool hasStamina;
     public Transform[] wayPoints;
     private int currentWP = 0;
     private bool isNight;
     private bool isFullRested;
     private bool isInRangeOfWood;
+    private bool woodExist;
 
 
     private ITreeeNode root;
@@ -32,6 +33,7 @@ public class TreeNPC : MonoBehaviour
         QuestionNode hasStamina = new QuestionNode(HasStamina, patrol, rest);
         QuestionNode isNight = new QuestionNode(IsNight, rest, patrol);
         QuestionNode isFullyRested = new QuestionNode(IsFullyRested, patrol, rest);
+        QuestionNode woodExist = new QuestionNode(WoodExist, locateWood, patrol);
         QuestionNode isInRangeOfWood = new QuestionNode(IsInRangeOfWood, collectWood, locateWood);
 
         root = hasStamina;
@@ -42,7 +44,8 @@ public class TreeNPC : MonoBehaviour
     {
         root.Execute();
         ManageStamina();
-        if (recharging)
+        ManageWood();
+        if (hasStamina)
         {
             Rest();
             
@@ -56,24 +59,45 @@ public class TreeNPC : MonoBehaviour
 
    // private bool IsInLos() => _los.CheckRange(target) && _los.CheckAngle(target) && _los.CheckView(target);
 
-    private bool HasStamina() => recharging;
+    private bool HasStamina()
+    {
+        if (stamina < 50)
+        {
+            return false;
+        }
+        else { return true; }
+    }
 
     private bool IsNight() => isNight;
 
     private bool IsFullyRested() => isFullRested;
 
+    private bool WoodExist() => woodExist;
+
+    private void ManageWood()
+    {
+        if (target == null)
+            woodExist = false;
+        else woodExist = true;
+    }
     
     private void ManageStamina()
     {
-        if(stamina < 0 && !recharging)
-            recharging = true;
-        else if(stamina >= 10 && recharging)
-            recharging = false;
+        if(stamina < 0 && !hasStamina)
+            hasStamina = true;
+        else if(stamina >= 10 && hasStamina)
+            hasStamina = false;
     }
 
     private void Idle()
     {
-        stamina += Time.deltaTime;
+        Debug.Log("Idle");
+        if (stamina < 100)
+        {
+            stamina += Time.deltaTime * 2;
+
+        }
+        else { HasStamina(); return; }
     }
     private void Follow()
     {
@@ -84,6 +108,7 @@ public class TreeNPC : MonoBehaviour
     }
     private void Patrol()
     {
+        Debug.Log("Patrol");
         if (Vector3.Distance(transform.position, wayPoints[currentWP].position) <= 0.5f)
         {
             currentWP = (currentWP + 1) % wayPoints.Length;
@@ -110,7 +135,7 @@ public class TreeNPC : MonoBehaviour
             else return true;
 
         }
-
+        Debug.Log("Is in Range of wood");
 
     }
 
@@ -120,14 +145,20 @@ public class TreeNPC : MonoBehaviour
     {
         Vector3 dir = target.position - transform.position;
         transform.position += dir.normalized*speed*Time.deltaTime;
+        Debug.Log("wood located");
     }
 
     private void Rest()
     {
+        Debug.Log("Rest");
+        var dist = Vector3.Distance(safePlace.position, transform.position);
         var dirToWaypoint = safePlace.position - transform.position;
-        if (safePlace.position != transform.position) transform.position += dirToWaypoint.normalized * speed * Time.deltaTime;
-        else Idle();
-        
+        if (dist >= 0.2) transform.position += dirToWaypoint.normalized * speed * Time.deltaTime;
+        else
+        {
+            Idle();
+            return;
+        }
     }
 
 }

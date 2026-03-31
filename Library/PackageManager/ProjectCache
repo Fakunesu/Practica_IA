@@ -5,16 +5,16 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 639087753435985646
-    m_Hash: 246430858
+      ticks: 639105254492133292
+    m_Hash: 3213187922
   m_LockFileStatus:
     m_FilePath: "E:/Facultad/3er A\xF1o/IA/IA-UADE-Clase1TP/Packages/packages-lock.json"
     m_PathExists: 1
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 639087753559176763
-    m_Hash: 1450332224
+      ticks: 639105254492133292
+    m_Hash: 3794029435
 m_EmbeddedPackageManifests:
   m_ManifestsStatus: {}
 m_LocalPackages:

@@ -7,15 +7,15 @@
       "RelativeMoniker": "D:0:0:{6434FE87-4F01-6019-04F0-3358D7A5BAB8}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\decitiontrees\\treenpc.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6434FE87-4F01-6019-04F0-3358D7A5BAB8}|Assembly-CSharp.csproj|e:\\facultad\\3er a\u00F1o\\ia\\ia-uade-clase1tp\\assets\\scripts\\camerascripts\\camerabehaviour.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{6434FE87-4F01-6019-04F0-3358D7A5BAB8}|Assembly-CSharp.csproj|E:\\Facultad\\3er A\u00F1o\\IA\\IA-UADE-Clase1TP\\assets\\scripts\\camerascripts\\camerabehaviour.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6434FE87-4F01-6019-04F0-3358D7A5BAB8}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\camerascripts\\camerabehaviour.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6434FE87-4F01-6019-04F0-3358D7A5BAB8}|Assembly-CSharp.csproj|e:\\facultad\\3er a\u00F1o\\ia\\ia-uade-clase1tp\\assets\\scripts\\decitiontrees\\lineofsight.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{6434FE87-4F01-6019-04F0-3358D7A5BAB8}|Assembly-CSharp.csproj|E:\\Facultad\\3er A\u00F1o\\IA\\IA-UADE-Clase1TP\\assets\\scripts\\decitiontrees\\lineofsight.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6434FE87-4F01-6019-04F0-3358D7A5BAB8}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\decitiontrees\\lineofsight.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6434FE87-4F01-6019-04F0-3358D7A5BAB8}|Assembly-CSharp.csproj|e:\\facultad\\3er a\u00F1o\\ia\\ia-uade-clase1tp\\assets\\scripts\\decitiontrees\\itreeenode.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{6434FE87-4F01-6019-04F0-3358D7A5BAB8}|Assembly-CSharp.csproj|E:\\Facultad\\3er A\u00F1o\\IA\\IA-UADE-Clase1TP\\assets\\scripts\\decitiontrees\\itreeenode.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6434FE87-4F01-6019-04F0-3358D7A5BAB8}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\decitiontrees\\itreeenode.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -29,6 +29,10 @@
           "SelectedChildIndex": 4,
           "Children": [
             {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
+            {
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "cameraBehaviour.cs",
@@ -38,8 +42,7 @@
               "RelativeToolTip": "Assets\\Scripts\\CameraScripts\\cameraBehaviour.cs",
               "ViewState": "AgIAAB4AAAAAAAAAAAAowDgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-30T21:10:17.108Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-30T21:10:17.108Z"
             },
             {
               "$type": "Document",
@@ -51,8 +54,7 @@
               "RelativeToolTip": "Assets\\Scripts\\DecitionTrees\\ITreeeNode.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-30T20:43:16.765Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-30T20:43:16.765Z"
             },
             {
               "$type": "Document",
@@ -64,12 +66,7 @@
               "RelativeToolTip": "Assets\\Scripts\\DecitionTrees\\LineOfSight.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-30T20:22:13.013Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+              "WhenOpened": "2026-03-30T20:22:13.013Z"
             },
             {
               "$type": "Document",
@@ -79,7 +76,7 @@
               "RelativeDocumentMoniker": "Assets\\Scripts\\DecitionTrees\\TreeNPC.cs",
               "ToolTip": "E:\\Facultad\\3er A\u00F1o\\IA\\IA-UADE-Clase1TP\\Assets\\Scripts\\DecitionTrees\\TreeNPC.cs",
               "RelativeToolTip": "Assets\\Scripts\\DecitionTrees\\TreeNPC.cs",
-              "ViewState": "AgIAABQAAAAAAAAAAAAQwHQAAAAEAAAAAAAAAA==",
+              "ViewState": "AgIAADYAAAAAAAAAAAAowEAAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-30T20:22:03.321Z",
               "EditorCaption": ""
