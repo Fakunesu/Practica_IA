@@ -1,0 +1,66 @@
+using UnityEngine;
+
+public class cameraBehaviour : MonoBehaviour
+{
+    [SerializeField] GameObject player;
+    [SerializeField] GameObject cameraAlert;
+    [SerializeField] LayerMask target;
+
+    [SerializeField] float distance;
+    [SerializeField] float angle;
+    private float realAngle;
+    [SerializeField] LayerMask walls;
+
+    void Start()
+    {
+        
+        realAngle = angle / 2;
+    }
+
+
+    private void Update()
+    {
+        //CameraPatroll();
+        cameraAlert.SetActive(Sigth());
+
+        if (cameraAlert.activeSelf == true)
+        {
+            followPlayer();
+        }
+    }
+
+    /*private void CameraPatroll()
+    {
+        RaycastHit hit;
+        
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, target))
+
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * hit.distance, Color.red);
+            cameraAlert.gameObject.SetActive(true);
+            Debug.Log("Did Hit");
+        }
+        else
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
+            cameraAlert.gameObject.SetActive(false);
+            Debug.Log("Did not Hit");
+        }
+    }*/
+
+    private void followPlayer()
+    {
+        var dir = player.transform.position - transform.position;
+        transform.rotation = Quaternion.LookRotation(dir);
+        
+    }
+    private bool Sigth()
+    {
+        var dir = player.transform.position-transform.position;
+        if(dir.magnitude > distance) return false;
+        if (Vector3.Angle(transform.forward, dir) > realAngle) return false;
+        if(Physics.Raycast(transform.position, dir.normalized, distance, walls)) return false;
+        return true;
+    }
+
+}
