@@ -1,23 +1,25 @@
-using System;
-using UnityEngine;
-
 public class QuestionNode : ITreeeNode
 {
+    private System.Func<bool> question;
     private ITreeeNode trueNode;
-    private ITreeeNode flaseNode;
-    private Func<bool> question;
+    private ITreeeNode falseNode;
 
-    public QuestionNode(Func<bool> question, ITreeeNode trueNode, ITreeeNode falseNode)
+    public QuestionNode(System.Func<bool> question, ITreeeNode trueNode, ITreeeNode falseNode)
     {
         this.question = question;
         this.trueNode = trueNode;
-        this.flaseNode = falseNode;
+        this.falseNode = falseNode;
     }
+
     public void Execute()
     {
-        if(question.Invoke())
+        if (question())
+        {
             trueNode.Execute();
+        }
         else
-            flaseNode.Execute();    
+        {
+            falseNode.Execute();
+        }
     }
 }

@@ -1,164 +1,180 @@
-using System.Drawing;
-using Unity.VisualScripting;
+using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class TreeNPC : MonoBehaviour
 {
-   // public LineOfSight _los;
     public Transform target;
     public Transform safePlace;
+    public Transform storage;
 
-    [SerializeField] float stamina;
-    public float speed;
-    private bool hasStamina;
-    public Transform[] wayPoints;
-    private int currentWP = 0;
-    private bool isNight;
+    [SerializeField] private bool isNight;
+    [SerializeField] private float timerToChange = 5f;
+    private float ciclingTimer;
+
+    [SerializeField] private float currentHP = 5f;
+    private int maxHP = 10;
+    private float speed = 3f;
+
     private bool isFullRested;
-    private bool isInRangeOfWood;
-    private bool woodExist;
 
+    [SerializeField] private int woodAmount;
+    private int maxWoodAmount = 3;
 
     private ITreeeNode root;
+
     void Start()
     {
-        ActionNode idle = new ActionNode(Idle);
-        ActionNode patrol = new ActionNode(Patrol);
-        ActionNode follow = new ActionNode(Follow);
-        ActionNode rest = new ActionNode(Rest);
-        ActionNode locateWood = new ActionNode(LocateWood);
+        ActionNode heal = new ActionNode(Heal);
         ActionNode collectWood = new ActionNode(CollectWood);
+        ActionNode goToHouse = new ActionNode(GoToHouse);
+        ActionNode goToWood = new ActionNode(GoToWood);
+        ActionNode goToStorage = new ActionNode(GoToStorage);
+        ActionNode depositWood = new ActionNode(DepositWood);
 
-        QuestionNode hasStamina = new QuestionNode(HasStamina, patrol, rest);
-        QuestionNode isNight = new QuestionNode(IsNight, rest, patrol);
-        QuestionNode isFullyRested = new QuestionNode(IsFullyRested, patrol, rest);
-        QuestionNode woodExist = new QuestionNode(WoodExist, locateWood, patrol);
-        QuestionNode isInRangeOfWood = new QuestionNode(IsInRangeOfWood, collectWood, locateWood);
+        QuestionNode closeToHouse = new QuestionNode(CloseToHouse, heal, goToHouse);
+        QuestionNode isInRangeOfWood = new QuestionNode(IsInRangeOfWood, collectWood, goToWood);
+        QuestionNode isInRangeOfStorage = new QuestionNode(IsInRangeOfStorage, depositWood, goToStorage);
+        QuestionNode hasCapacity = new QuestionNode(HasCapacity, isInRangeOfWood, isInRangeOfStorage);
+        QuestionNode isNightNode = new QuestionNode(IsNight, closeToHouse, hasCapacity);
+        QuestionNode isInjured = new QuestionNode(IsInjured, closeToHouse, isNightNode);
 
-        root = hasStamina;
+        root = isInjured;
     }
 
-   
     void Update()
     {
-        root.Execute();
-        ManageStamina();
-        ManageWood();
-        if (hasStamina)
-        {
-            Rest();
-            
-        }
-        else
-        {
-            Patrol();
-        }
 
-    }
+        CicleOfDay();
 
-   // private bool IsInLos() => _los.CheckRange(target) && _los.CheckAngle(target) && _los.CheckView(target);
-
-    private bool HasStamina()
-    {
-        if (stamina < 50)
+        if (root != null)
         {
-            return false;
+            root.Execute();
         }
-        else { return true; }
     }
 
     private bool IsNight() => isNight;
 
     private bool IsFullyRested() => isFullRested;
 
-    private bool WoodExist() => woodExist;
-
-    private void ManageWood()
+    private bool CloseToHouse()
     {
-        if (target == null)
-            woodExist = false;
-        else woodExist = true;
-    }
-    
-    private void ManageStamina()
-    {
-        if(stamina < 0 && !hasStamina)
-            hasStamina = true;
-        else if(stamina >= 10 && hasStamina)
-            hasStamina = false;
+        float dist = Vector3.Distance(transform.position, safePlace.position);
+        return dist < 0.2f;
     }
 
-    private void Idle()
+    private bool HasCapacity()
     {
-        Debug.Log("Idle");
-        if (stamina < 100)
+        if (woodAmount < maxWoodAmount)
         {
-            stamina += Time.deltaTime * 2;
-
+            return true;
         }
-        else { HasStamina(); return; }
-    }
-    private void Follow()
-    {
-        var dir = target.position - transform.position;
-        transform.position += dir.normalized * speed * Time.deltaTime;
-        stamina -= Time.deltaTime;
-
-    }
-    private void Patrol()
-    {
-        Debug.Log("Patrol");
-        if (Vector3.Distance(transform.position, wayPoints[currentWP].position) <= 0.5f)
-        {
-            currentWP = (currentWP + 1) % wayPoints.Length;
-        }
-        var dir = wayPoints[currentWP].position - transform.position;
-        transform.position += dir.normalized * speed * Time.deltaTime;
-        stamina -= Time.deltaTime;
-
+        else { return false; }
     }
 
-    private void CollectWood()
+    private bool IsInjured()
     {
-        if (target == null) return;
+        return currentHP < maxHP;
     }
 
     private bool IsInRangeOfWood()
     {
         if (target == null) return false;
-        else
+
+        float dist = Vector3.Distance(transform.position, target.position);
+        return dist < 2f;
+    }
+
+    private bool IsInRangeOfStorage()
+    {
+        if (storage == null) return false;
+
+        float dist = Vector3.Distance(transform.position, storage.position);
+        return dist < 2f;
+    }
+
+    private void CollectWood()
+    {
+        if (target == null) return;
+
+        woodAmount++;
+        if (woodAmount >= maxWoodAmount)
         {
-            float dist = Vector3.Distance(transform.position, target.position);
-
-            if (dist >= 2) return false;
-            else return true;
-
+            HasCapacity();
         }
-        Debug.Log("Is in Range of wood");
-
+        Debug.Log("Collecting wood");
     }
 
-    
-
-    private void LocateWood()
+    private void DepositWood()
     {
-        Vector3 dir = target.position - transform.position;
-        transform.position += dir.normalized*speed*Time.deltaTime;
-        Debug.Log("wood located");
+        woodAmount = 0;
+        Debug.Log("Depositing wood");
     }
 
-    private void Rest()
+    private void Heal()
     {
-        Debug.Log("Rest");
-        var dist = Vector3.Distance(safePlace.position, transform.position);
-        var dirToWaypoint = safePlace.position - transform.position;
-        if (dist >= 0.2) transform.position += dirToWaypoint.normalized * speed * Time.deltaTime;
-        else
+        if (currentHP < maxHP)
         {
-            Idle();
+            currentHP += Time.deltaTime;
+            if (currentHP > maxHP)
+                currentHP = maxHP;
+
+            Debug.Log("Healing");
+        }
+    }
+
+    private void GoToWood()
+    {
+        if (target == null) return;
+
+        Vector3 dir = target.position - transform.position;
+        transform.position += dir.normalized * speed * Time.deltaTime;
+        Debug.Log("Going to wood");
+    }
+
+    private void GoToHouse()
+    {
+        if (safePlace == null) return;
+
+        Vector3 dir = safePlace.position - transform.position;
+        transform.position += dir.normalized * speed * Time.deltaTime;
+        Debug.Log("Going to house");
+    }
+
+    private void GoToStorage()
+    {
+        if (storage == null)
+        {
+            Debug.Log("NoStorage");
             return;
         }
+        else
+        {
+            Vector3 dir = storage.position - transform.position;
+            transform.position += dir.normalized * speed * Time.deltaTime;
+            Debug.Log("Going to storage");
+        }
     }
 
+    private void CicleOfDay()
+    {
+
+        ciclingTimer += Time.deltaTime;
+        if (isNight == false)
+        {
+
+            if (ciclingTimer >= timerToChange)
+            {
+                ciclingTimer = 0;
+                isNight = true;
+            }
+        }
+        else if (isNight == true)
+        {
+            if (ciclingTimer >= timerToChange)
+            {
+                ciclingTimer = 0;
+                isNight = false;
+            }
+        }
+    }
 }
