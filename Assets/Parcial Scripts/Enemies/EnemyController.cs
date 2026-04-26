@@ -4,19 +4,20 @@ using UnityEngine.SceneManagement;
 public class EnemyController : MonoBehaviour
 {
     [Header("Player")]
-    [SerializeField] private Transform player;
+    [SerializeField] private GameObject player;
     private Rigidbody playerRB;
 
     //"Scripts"
     private LineOfSight los;
     private EnemyTree desitionTree;
     private EnemyContext context;
+    private PlayerMovementController playerStats;
 
     [Header("Enemy Stats")]
     private float maxStamina = 100;
     [SerializeField] private float stamina;
-    [SerializeField] private float speed = 3;
-    [SerializeField] private float chasingSpeed = 6f;
+    [SerializeField] private float speed = 5;
+    [SerializeField] private float chasingSpeed = 10f;
 
     [Header("SteeringBehaviour")]
     private Vector3 dir;
@@ -26,7 +27,7 @@ public class EnemyController : MonoBehaviour
     private Vector3 wanderDirection;
     private float wanderTime;
     [SerializeField] private float WanderchangeInterval = 1.5f;
-    private bool isAttacking = false;
+    //private bool isAttacking = false;
     [SerializeField] private float maxPredictionTime = 2f;
     [SerializeField] private float arriveRadius = 3f;
 
@@ -35,18 +36,19 @@ public class EnemyController : MonoBehaviour
     {
         los = GetComponent<LineOfSight>();
         desitionTree = GetComponent<EnemyTree>();
+        playerStats = GetComponent<PlayerMovementController>();
         wanderDirection = transform.forward;
-        context = new EnemyContext { self = transform, player = player, los = los };
+        context = new EnemyContext { self = transform, player = player.transform, los = los };
     }
 
     private void Start()
     {
-        player = GameObject.Find("player").transform;
+        
     }
 
     public void Update()
     {
-        context.player = player;
+        context.player = player.transform;
         Move(dir);
     }
 
@@ -74,21 +76,29 @@ public class EnemyController : MonoBehaviour
 
     public bool IsInDisadvantage()
     {
-        return true;
+        if (playerStats.isPowerUpped == true)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+        
     }
     public void FleePlayer()
     {
-        dir = SteeringBehaviour.Flee(transform, player.position);
+        dir = SteeringBehaviour.Flee(transform, player.transform.position);
     }
 
     public void EvadePlayer()
     {
-        dir = SteeringBehaviour.Evade(transform, player, playerRB, maxPredictionTime);
+        dir = SteeringBehaviour.Evade(transform, player.transform, playerRB, maxPredictionTime);
     }
 
     public void ArriveToPlayer()
     {
-        dir = SteeringBehaviour.Arrive(transform, player.position, arriveRadius);
+        dir = SteeringBehaviour.Arrive(transform, player.transform.position, arriveRadius);
     }
     public void Pursue()
     {

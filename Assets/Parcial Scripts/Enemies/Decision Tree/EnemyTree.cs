@@ -6,9 +6,7 @@ using static UnityEngine.GraphicsBuffer;
 
 public class EnemyTree : MonoBehaviour
 {
-
-    
-    //private LineOfSigth los;
+    private LineOfSight los;
     private EnemyController controller;
 
     [Header("Chase")]
@@ -30,7 +28,7 @@ public class EnemyTree : MonoBehaviour
 
     private void Awake()
     {
-        //los = GetComponent<LineOfSigth>();
+        los = GetComponent<LineOfSight>();
         controller = GetComponent<EnemyController>();
     }
 
@@ -43,12 +41,12 @@ public class EnemyTree : MonoBehaviour
         ActionNode rest = new ActionNode(Rest);//esta
 
         QuestionNode isInRange = new QuestionNode(IsInRange, attack, chasing);//falta
-        QuestionNode isInDisadvantage = new QuestionNode(IsInDisadvantage, runAway, isInRange);//falta
+        QuestionNode isInDisadvantage = new QuestionNode(()=>controller.IsInDisadvantage(), runAway, isInRange);//esta
         QuestionNode isSeeingPlayer = new QuestionNode(() => controller.IsSeeingPlayer(), isInDisadvantage, patrol);//esta
         QuestionNode hasStamina = new QuestionNode(() => controller.HasStamina(), isSeeingPlayer, rest);//esta
 
         root = hasStamina;
-
+        
     }
 
     void Update()
@@ -60,10 +58,10 @@ public class EnemyTree : MonoBehaviour
     }
 
 
-    private bool IsInDisadvantage()
+    /*private bool IsInDisadvantage()
     {
-        return false;
-    }
+        
+    }*/
 
    /* private bool IsSeeingPlayer()
     {
@@ -81,7 +79,8 @@ public class EnemyTree : MonoBehaviour
     
     private bool IsInRange()
     {
-        { return false; }
+        Debug.Log("se rompe aca");
+        return true;
     }
 
 
@@ -108,6 +107,7 @@ public class EnemyTree : MonoBehaviour
     {
         controller.Rest();
     }
+
     private void Patrol()
     {
         if (wayPoints == null || wayPoints.Count == 0) 
@@ -144,6 +144,7 @@ public class EnemyTree : MonoBehaviour
     }
     private void RunAway()
     {
-        controller.EvadePlayer();
+        //controller.EvadePlayer();
+        Debug.Log("corre");
     }
 }
