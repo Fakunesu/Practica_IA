@@ -1,3 +1,4 @@
+using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -36,7 +37,7 @@ public class EnemyController : MonoBehaviour
     {
         los = GetComponent<LineOfSight>();
         desitionTree = GetComponent<EnemyTree>();
-        playerStats = GetComponent<PlayerMovementController>();
+        playerStats = player.GetComponent<PlayerMovementController>();
         wanderDirection = transform.forward;
         context = new EnemyContext { self = transform, player = player.transform, los = los };
     }
@@ -69,9 +70,9 @@ public class EnemyController : MonoBehaviour
         }
         else
         {
-
             return false;
         }
+        
     }
 
     public bool IsInDisadvantage()
@@ -86,6 +87,20 @@ public class EnemyController : MonoBehaviour
         }
         
     }
+
+    public bool IsInRange()
+    {
+        Debug.Log("pregunta si ataca");
+        if (los.IsRangeAttack(transform, player.transform))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     public void FleePlayer()
     {
         dir = SteeringBehaviour.Flee(transform, player.transform.position);
@@ -128,7 +143,7 @@ public class EnemyController : MonoBehaviour
 
     public void Attack()
     {
-       
+        Debug.Log("Ataco");
     }
     public void Wander()
     {
@@ -140,13 +155,11 @@ public class EnemyController : MonoBehaviour
         }
         dir = wanderDirection;
 
-        Debug.Log("vAYA");
+        Debug.Log("random");
     }
     public void Seek()
     {
         dir = SteeringBehaviour.Seek(transform, player.transform.position);
-
-        Debug.Log("vAYA123");
     }
 
     private void Move(Vector3 dir)

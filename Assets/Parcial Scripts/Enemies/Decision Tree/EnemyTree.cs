@@ -40,8 +40,8 @@ public class EnemyTree : MonoBehaviour
         ActionNode patrol = new ActionNode(Patrol);//esta
         ActionNode rest = new ActionNode(Rest);//esta
 
-        QuestionNode isInRange = new QuestionNode(IsInRange, attack, chasing);//falta
-        QuestionNode isInDisadvantage = new QuestionNode(()=>controller.IsInDisadvantage(), runAway, isInRange);//esta
+        QuestionNode isInRange = new QuestionNode(()=>controller.IsInRange(), attack, chasing);//falta
+        QuestionNode isInDisadvantage = new QuestionNode(()=>controller.IsInDisadvantage(), runAway, isInRange);//esta mal
         QuestionNode isSeeingPlayer = new QuestionNode(() => controller.IsSeeingPlayer(), isInDisadvantage, patrol);//esta
         QuestionNode hasStamina = new QuestionNode(() => controller.HasStamina(), isSeeingPlayer, rest);//esta
 
@@ -77,16 +77,16 @@ public class EnemyTree : MonoBehaviour
         }
     }*/
     
-    private bool IsInRange()
-    {
-        Debug.Log("se rompe aca");
-        return true;
-    }
+    //private bool IsInRange()
+    //{
+    //    Debug.Log("is in range");
+    //    return true;
+    //}
 
 
     private void Attack() 
     {
-
+        controller.Attack();
     }
     private void Chasing()
     {
@@ -144,7 +144,7 @@ public class EnemyTree : MonoBehaviour
     }
     private void RunAway()
     {
-        //controller.EvadePlayer();
+        controller.EvadePlayer();
         Debug.Log("corre");
     }
 }
