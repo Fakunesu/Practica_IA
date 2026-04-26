@@ -7,9 +7,9 @@ using static UnityEngine.GraphicsBuffer;
 public class EnemyTree : MonoBehaviour
 {
 
-    private float maxStamina=100;
-    [SerializeField] private float stamina;
-    private LineOfSigth los;
+    
+    //private LineOfSigth los;
+    private EnemyController controller;
 
     [Header("Chase")]
     [SerializeField] private GameObject player;
@@ -30,27 +30,27 @@ public class EnemyTree : MonoBehaviour
 
     private void Awake()
     {
-        los = GetComponent<LineOfSigth>();
+        //los = GetComponent<LineOfSigth>();
+        controller = GetComponent<EnemyController>();
     }
 
     void Start()
     {
-        ActionNode attack = new ActionNode(Attack);
-        ActionNode chasing = new ActionNode(Chasing);
-        ActionNode runAway = new ActionNode(RunAway);
-        ActionNode patrol = new ActionNode(Patrol);
-        ActionNode rest = new ActionNode(Rest);
+        ActionNode attack = new ActionNode(Attack);//falta
+        ActionNode chasing = new ActionNode(Chasing);//esta
+        ActionNode runAway = new ActionNode(RunAway);//esta
+        ActionNode patrol = new ActionNode(Patrol);//esta
+        ActionNode rest = new ActionNode(Rest);//esta
 
-        QuestionNode isInRange = new QuestionNode(IsInRange, attack, chasing);
-        QuestionNode isInDisadvantage = new QuestionNode(IsInDisadvantage, runAway, isInRange);
-        QuestionNode isSeeingPlayer = new QuestionNode(IsSeeingPlayer, isInDisadvantage, patrol);
-        QuestionNode hasStamina = new QuestionNode(HasStamina, isSeeingPlayer, rest);
+        QuestionNode isInRange = new QuestionNode(IsInRange, attack, chasing);//falta
+        QuestionNode isInDisadvantage = new QuestionNode(IsInDisadvantage, runAway, isInRange);//falta
+        QuestionNode isSeeingPlayer = new QuestionNode(() => controller.IsSeeingPlayer(), isInDisadvantage, patrol);//esta
+        QuestionNode hasStamina = new QuestionNode(() => controller.HasStamina(), isSeeingPlayer, rest);//esta
 
         root = hasStamina;
 
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (root != null)
@@ -59,21 +59,13 @@ public class EnemyTree : MonoBehaviour
         }
     }
 
-    private bool HasStamina()
-    {
-        if (stamina <= 0)
-        {
-            return false;
-        }
-        else { return true; }
-    }
 
     private bool IsInDisadvantage()
     {
         return false;
     }
 
-    private bool IsSeeingPlayer()
+   /* private bool IsSeeingPlayer()
     {
         if (los.Sigth(player, losDistance, losAngle, losWalls) == true)
         {
@@ -85,7 +77,7 @@ public class EnemyTree : MonoBehaviour
 
             return false; 
         }
-    }
+    }*/
     
     private bool IsInRange()
     {
@@ -99,24 +91,22 @@ public class EnemyTree : MonoBehaviour
     }
     private void Chasing()
     {
-        Vector3 dir = player.transform.position - transform.position;
-        dir.y = 0f;
+        /* Vector3 dir = player.transform.position - transform.position;
+         dir.y = 0f;
 
-        if (dir.magnitude > 0.1f)
-        {
-            Vector3 moveDir = dir.normalized;
+         if (dir.magnitude > 0.1f)
+         {
+             Vector3 moveDir = dir.normalized;
 
-            transform.position += moveDir * chasingSpeed * Time.deltaTime;
-            transform.forward = moveDir;
-        }
+             transform.position += moveDir * chasingSpeed * Time.deltaTime;
+             transform.forward = moveDir;
+         }*/
+
+        controller.Seek();
     }
     private void Rest()
     {
-        if (stamina < maxStamina)
-        {
-            stamina += Time.deltaTime * 2;
-            Debug.Log("Healing");
-        }
+        controller.Rest();
     }
     private void Patrol()
     {
@@ -154,6 +144,6 @@ public class EnemyTree : MonoBehaviour
     }
     private void RunAway()
     {
-
+        controller.EvadePlayer();
     }
 }

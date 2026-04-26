@@ -1,34 +1,40 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class LineOfSigth : MonoBehaviour
+public class LineOfSight : MonoBehaviour
 {
+    [SerializeField] private int distance = 33;
+    [SerializeField] private float angle = 90;
+    [SerializeField] private LayerMask obs;
+    private GameObject player;
 
-
-    public bool Sigth(GameObject gameObject, float distance, float angle, LayerMask walls)
+    [SerializeField] private float distanceForAttack;
+    private void Start()
     {
-        float realAngle;
-        realAngle = angle / 2;
-        var dir = gameObject.transform.position - transform.position;
-        if (dir.magnitude > distance)
-        {
-            Debug.Log("No lo ve: está lejos");
-            return false; 
-        }
-        if (Vector3.Angle(transform.forward, dir) > realAngle)
-        {
-            Debug.Log("No lo ve: está fuera del ángulo");
-            return false;
-        }
-        if (Physics.Raycast(transform.position, dir.normalized, dir.magnitude, walls))
-        {
-            Debug.Log("No lo ve: hay una pared en el medio");
-            return false; 
-        }
-        else
-        {
-            Debug.Log("lo ve");
-            return true;
-        }
+        player = GameObject.Find("Player");
+    }
+
+    public bool IsRange(Transform self, Transform target)
+    {
+        return Vector3.Distance(self.position, target.position) < distance;
+    }
+
+    public bool IsRangeAttack(Transform self, Transform target)
+    {
+        return Vector3.Distance(self.position, target.position) < distanceForAttack;
+    }
+
+    public bool IsAngle(Transform self, Transform target)
+    {
+        Vector3 dir = target.position - self.position;
+
+        return Vector3.Angle(self.forward, dir) < angle / 2;
+    }
+
+    public bool IsObstacle(Transform self, Transform target)
+    {
+        Vector3 dir = target.position - self.position;
+
+        return Physics.Raycast(self.position, dir.normalized, dir.magnitude, obs);
     }
 }
