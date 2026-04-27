@@ -16,13 +16,6 @@ public class EnemyTree : MonoBehaviour
     [SerializeField] private LayerMask losWalls;
     [SerializeField] private float chasingSpeed = 6f;
 
-    [Header("Patrol")]
-    [SerializeField] private List<Transform> wayPoints = new List<Transform>();
-    [SerializeField] private float patrolSpeed = 3f;
-    [SerializeField] private float minDistanceToWaypoint = 0.2f;
-
-    private int currentWaypointIndex = 0;
-
 
     private ITreeeNode root;
 
@@ -90,17 +83,6 @@ public class EnemyTree : MonoBehaviour
     }
     private void Chasing()
     {
-        /* Vector3 dir = player.transform.position - transform.position;
-         dir.y = 0f;
-
-         if (dir.magnitude > 0.1f)
-         {
-             Vector3 moveDir = dir.normalized;
-
-             transform.position += moveDir * chasingSpeed * Time.deltaTime;
-             transform.forward = moveDir;
-         }*/
-
         controller.Seek();
     }
     private void Rest()
@@ -110,37 +92,7 @@ public class EnemyTree : MonoBehaviour
 
     private void Patrol()
     {
-        if (wayPoints == null || wayPoints.Count == 0) 
-        {
-            Debug.Log("No hay waypoints");
-            return; 
-        }
-        if (wayPoints[currentWaypointIndex] == null) return;
-
-        Transform currentWaypoint = wayPoints[currentWaypointIndex];
-
-        Vector3 direction = currentWaypoint.position - transform.position;
-        direction.y = 0f;
-
-        if (direction.magnitude <= minDistanceToWaypoint)
-        {
-            currentWaypointIndex++;
-
-            if (currentWaypointIndex >= wayPoints.Count)
-            {
-                currentWaypointIndex = 0;
-            }
-
-            return;
-        }
-
-        Vector3 moveDirection = direction.normalized;
-        transform.position += moveDirection * patrolSpeed * Time.deltaTime;
-
-        if (moveDirection != Vector3.zero)
-        {
-            transform.forward = moveDirection;
-        }
+        controller.PatrollingWaypoints();
     }
     private void RunAway()
     {

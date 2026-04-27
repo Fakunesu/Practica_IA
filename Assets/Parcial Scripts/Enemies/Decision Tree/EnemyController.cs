@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -15,7 +16,7 @@ public class EnemyController : MonoBehaviour
     private PlayerMovementController playerStats;
 
     [Header("Enemy Stats")]
-    private float maxStamina = 100;
+    private float maxStamina = 15;
     [SerializeField] private float stamina;
     [SerializeField] private float speed = 5;
     [SerializeField] private float chasingSpeed = 10f;
@@ -32,14 +33,28 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private float maxPredictionTime = 2f;
     [SerializeField] private float arriveRadius = 3f;
 
+    [Header("Patrol")]
+    [SerializeField] private List<Transform> wayPoints = new List<Transform>();
+    [SerializeField] private float patrolSpeed = 10f;
+    [SerializeField] private float minDistanceToWaypoint = 0.2f;
+    private int currentWaypointIndex = 0;
+    private bool rightPatrol;
+
+    [Header("Rest")]
+    [SerializeField] private float timer = 5f;
+    [SerializeField] float counter;
+
+
 
     private void Awake()
     {
         los = GetComponent<LineOfSight>();
         desitionTree = GetComponent<EnemyTree>();
         playerStats = player.GetComponent<PlayerMovementController>();
+        playerRB= player.GetComponent<Rigidbody>();
         wanderDirection = transform.forward;
         context = new EnemyContext { self = transform, player = player.transform, los = los };
+
     }
 
     private void Start()
@@ -101,6 +116,56 @@ public class EnemyController : MonoBehaviour
         }
     }
 
+    public void PatrollingWaypoints()
+    {
+        Debug.Log(currentWaypointIndex);
+        if (wayPoints == null || wayPoints.Count == 0)
+        {
+            Debug.Log("No hay waypoints");
+            return;
+        }
+        if (wayPoints[currentWaypointIndex] == null) return;
+
+        Transform currentWaypoint = wayPoints[currentWaypointIndex];
+
+        dir = SteeringBehaviour.Seek(transform, currentWaypoint.position);
+
+        dir.y = 0f;
+        dir.Normalize();
+
+        if ((currentWaypoint.position - transform.position).magnitude < minDistanceToWaypoint)
+        {
+            if (currentWaypointIndex == 0)
+            {
+
+                rightPatrol = true;
+
+            }
+            else if (currentWaypointIndex == wayPoints.Count-1)
+            {
+                rightPatrol = false;
+            }
+
+            if (rightPatrol == true)
+            {
+                currentWaypointIndex++;
+
+            }
+            else if (rightPatrol == false)
+            {
+                currentWaypointIndex--;
+            }
+        }
+        Vector3 moveDirection = dir.normalized;
+        transform.position += moveDirection * speed * Time.deltaTime;
+
+        if (moveDirection != Vector3.zero)
+        {
+            transform.forward = moveDirection;
+            stamina-=Time.deltaTime;
+        }
+    }
+
     public void FleePlayer()
     {
         dir = SteeringBehaviour.Flee(transform, player.transform.position);
@@ -133,11 +198,15 @@ public class EnemyController : MonoBehaviour
 
     public void Rest()
     {
-        if (stamina < maxStamina)
+        counter += Time.deltaTime;
+        dir = Vector3.zero;
+        if(counter > timer)
         {
-            stamina += Time.deltaTime * 2;
-            Debug.Log("Healing");
+            stamina = maxStamina;
+            counter = 0;
+            return;
         }
+
     }
 
 
@@ -155,7 +224,6 @@ public class EnemyController : MonoBehaviour
         }
         dir = wanderDirection;
 
-        Debug.Log("random");
     }
     public void Seek()
     {

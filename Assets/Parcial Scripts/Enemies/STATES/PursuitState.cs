@@ -9,7 +9,7 @@ public class PursuitState : State
 
     public override void Enter()
     {
-        Debug.Log("Entering Pursuit State");
+        
     }
 
     public override void Update(bool canSeePlayer)

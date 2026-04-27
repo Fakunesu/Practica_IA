@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 public class LineOfSight : MonoBehaviour
 {
-    [SerializeField] private int distance = 33;
-    [SerializeField] private float angle = 90;
+    [SerializeField] private int distance = 13;
+    [SerializeField] private float angle = 13;
     [SerializeField] private LayerMask obs;
     private GameObject player;
 
-    [SerializeField] private float distanceForAttack;
+    [SerializeField] private float distanceForAttack=2.3f;
     private void Start()
     {
         player = GameObject.Find("Player");

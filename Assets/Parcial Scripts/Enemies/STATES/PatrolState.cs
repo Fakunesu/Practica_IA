@@ -9,7 +9,7 @@ public class PatrolState : State
 
     public override void Enter()
     {
-        Debug.Log("Entering Patrol State");
+        
     }
 
     public override void Update (bool canSeePlayer)
