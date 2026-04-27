@@ -428,8 +428,8 @@ MonoBehaviour:
   wanderChangeInterval: 1.5
   currentStamina: 100
   maxStamina: 100
-  staminaRegenRate: 20
-  staminaDepletionRate: 10
+  staminaRegenRate: 300
+  staminaDepletionRate: 30
 --- !u!114 &244001010
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -526,7 +526,7 @@ Transform:
   m_GameObject: {fileID: 244001008}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 92.4, y: 0.31799, z: -5.1935425}
+  m_LocalPosition: {x: 92.4, y: 1.2, z: -5.1935425}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -808,7 +808,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1034485953}
   m_Layer: 0
-  m_Name: Waypoint3
+  m_Name: Waypoint2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1032,7 +1032,7 @@ Transform:
   m_GameObject: {fileID: 1868105534}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 65, y: 0, z: -8.2}
+  m_LocalPosition: {x: 21.5, y: 1, z: -8.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
