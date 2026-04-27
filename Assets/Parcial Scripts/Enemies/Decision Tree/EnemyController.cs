@@ -200,6 +200,12 @@ public class EnemyController : MonoBehaviour
     {
         counter += Time.deltaTime;
         dir = Vector3.zero;
+
+        if(los.IsRange(transform, player.transform))
+        {
+            Seek();
+        }
+
         if(counter > timer)
         {
             stamina = maxStamina;
