@@ -8,6 +8,7 @@ public class FSMClasses : MonoBehaviour
     private PursuitState pursuitState;
     private FreezeState freezeState;
     private AttackState attackState;
+    private EvadeState evadeState;
 
     public EnemyControllerFSM enemy;
 
@@ -20,6 +21,7 @@ public class FSMClasses : MonoBehaviour
         pursuitState = new PursuitState(this);
         freezeState = new FreezeState(this);
         attackState = new AttackState(this);
+        evadeState = new EvadeState(this);
 
         currentState = patrolState;
         currentState.Enter();
@@ -28,6 +30,10 @@ public class FSMClasses : MonoBehaviour
     // Update is called once per frame
     public void UpdateState(bool canSeePlayer)
     {
+        if(enemy.IsInDisadvantage())
+        {
+            ChangeState(evadeState);
+        }
         currentState.Update(canSeePlayer);
     }
 
@@ -62,6 +68,11 @@ public class FSMClasses : MonoBehaviour
     public void ToAttack()
     {
         ChangeState(attackState);
+    }
+
+    public void ToEvade()
+    {
+        ChangeState(evadeState);
     }
 
 

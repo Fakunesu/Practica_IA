@@ -13,7 +13,7 @@ public class PlayerMovementController : MonoBehaviour
     private Vector3 velocity;
 
     //Encapsulamiento
-    public bool IsPowerUpped => IsPowerUpped;
+    public bool IsPowerUpped => isPowerUpped;
 
     private void Awake()
     {

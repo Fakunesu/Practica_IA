@@ -173,7 +173,7 @@ public class EnemyController : MonoBehaviour
 
     public void EvadePlayer()
     {
-        dir = SteeringBehaviour.Evade(transform, player.transform, playerRB, maxPredictionTime);
+        dir = SteeringBehaviour.Flee(transform, player.transform.transform.position);
     }
 
     public void ArriveToPlayer()

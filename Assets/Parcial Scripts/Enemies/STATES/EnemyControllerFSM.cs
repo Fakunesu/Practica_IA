@@ -6,6 +6,8 @@ using UnityEngine.SceneManagement;
 public class EnemyControllerFSM : MonoBehaviour
 {
     public Transform player;
+    private PlayerMovementController playerStats;
+    private Rigidbody playerRB;
 
     private LineOfSight los;
     private FSMClasses fsm;
@@ -33,6 +35,8 @@ public class EnemyControllerFSM : MonoBehaviour
     private void Start()
     {
         player = GameObject.Find("Player").transform;
+        playerStats = player.GetComponent<PlayerMovementController>();
+        playerRB = player.GetComponent<Rigidbody>();
     }
 
     private void Update()
@@ -43,6 +47,20 @@ public class EnemyControllerFSM : MonoBehaviour
 
         Move(dir);
     }
+
+    public bool IsInDisadvantage()
+    {
+        if (playerStats.IsPowerUpped == true)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+
     public void StopAttack()
     {
         isAttacking = false;
@@ -75,6 +93,11 @@ public class EnemyControllerFSM : MonoBehaviour
     public void Seek()
     {
         dir = SteeringBehaviour.Seek(transform, player.position);
+    }
+
+    public void Flee()
+    {
+        dir = SteeringBehaviour.Flee(transform, player.transform.position);
     }
 
     public void FreezePlayer(float duration)
