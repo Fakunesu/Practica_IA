@@ -33,8 +33,8 @@ public class EnemyTree : MonoBehaviour
         ActionNode patrol = new ActionNode(Patrol);//esta
         ActionNode rest = new ActionNode(Rest);//esta
 
-        QuestionNode isInRange = new QuestionNode(()=>controller.IsInRange(), attack, chasing);//falta
-        QuestionNode isInDisadvantage = new QuestionNode(()=>controller.IsInDisadvantage(), runAway, isInRange);//esta mal
+        QuestionNode isInRange = new QuestionNode(()=>controller.IsInRange(), attack, chasing);//esta
+        QuestionNode isInDisadvantage = new QuestionNode(()=>controller.IsInDisadvantage(), runAway, isInRange);//esta 
         QuestionNode isSeeingPlayer = new QuestionNode(() => controller.IsSeeingPlayer(), isInDisadvantage, patrol);//esta
         QuestionNode hasStamina = new QuestionNode(() => controller.HasStamina(), isSeeingPlayer, rest);//esta
 
