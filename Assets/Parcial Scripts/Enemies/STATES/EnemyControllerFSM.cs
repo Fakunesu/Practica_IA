@@ -19,6 +19,10 @@ public class EnemyControllerFSM : MonoBehaviour
     private float wanderTime;
     [SerializeField] private float wanderChangeInterval = 1.5f;
 
+    [SerializeField] private Transform[] wayPoints;
+    [SerializeField] private float waypointThreshold = 0.5f;
+    private int currentWaypointIndex = 0;
+
 
     private Vector3 dir;
     private bool isAttacking = false;
@@ -28,6 +32,10 @@ public class EnemyControllerFSM : MonoBehaviour
     [SerializeField] private float maxStamina = 100f;
     [SerializeField] private float staminaRegenRate = 300f;
     [SerializeField] private float staminaDepletionRate = 30f;
+
+    [Header("Obstacle Avoidance")]
+    [SerializeField] private float obstacleDetectionDistance = 5f;
+    [SerializeField] private LayerMask obstacleMask;
 
     public bool HasStamina => currentStamina > 0f;
     public bool IsStaminaFull => currentStamina >= maxStamina;
@@ -86,21 +94,42 @@ public class EnemyControllerFSM : MonoBehaviour
         Debug.Log("Deja de atacar Player");
     }
 
-    public void Wander()
+    public void PatrolWaypoints()
     {
-        wanderTime -= Time.deltaTime;
-        
-        if (wanderTime <= 0f)
+        if(wayPoints == null || wayPoints.Length == 0)
         {
-            wanderDirection = SteeringBehaviour.Wander(wanderDirection, 180);
-            wanderTime = wanderChangeInterval;
+            dir = Vector3.zero;
+            return;
         }
-        dir = wanderDirection;
+
+        Transform currentWaypoint = wayPoints[currentWaypointIndex];
+
+        if(currentWaypoint == null)
+        {
+            dir = Vector3.zero;
+            return;
+        }
+
+        dir = SteeringBehaviour.Seek(transform, currentWaypoint.position);
+
+        float distance = Vector3.Distance(transform.position, currentWaypoint.position);
+
+        if ( distance <= waypointThreshold)
+        {
+            currentWaypointIndex++;
+
+            if (currentWaypointIndex >= wayPoints.Length)
+            {
+                currentWaypointIndex = 0;
+            }
+        }
     }
 
     public void Seek()
     {
-        dir = SteeringBehaviour.Seek(transform, player.position);
+        Vector3 seekDir = SteeringBehaviour.Seek(transform, player.position);
+
+        dir = SteeringBehaviour.ObstacleAvoidance(transform, seekDir, obstacleDetectionDistance, obstacleMask);
     }
 
     public void Flee()

@@ -14,7 +14,7 @@ public class PatrolState : State
 
     public override void Update (bool canSeePlayer)
     {
-        fsm.enemy.Wander();
+        fsm.enemy.PatrolWaypoints();
         fsm.enemy.DrainStamina();
 
         if (!fsm.enemy.HasStamina)

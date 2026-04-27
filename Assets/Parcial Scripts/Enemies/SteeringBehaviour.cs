@@ -15,6 +15,34 @@ public static class SteeringBehaviour
         return dir.normalized;
     }
 
+    public static Vector3 ObstacleAvoidance (Transform self, Vector3 currentDir, float detecionDistance, LayerMask obstacleMask)
+    {
+        currentDir.y = 0f;
+
+        if(currentDir == Vector3.zero)
+        {
+            currentDir = self.forward;
+        }
+
+        currentDir.Normalize();
+
+        if(Physics.Raycast(self.position, currentDir, out RaycastHit hit, detecionDistance, obstacleMask))
+        {
+            Vector3 avoidDir = Vector3.Cross(Vector3.up, hit.normal);
+            avoidDir.y = 0f;
+
+            if(Vector3.Dot(avoidDir, self.forward) < 0f)
+            {
+                avoidDir = -avoidDir;
+            }
+
+            return avoidDir.normalized;
+        }
+
+        return currentDir;
+
+    }
+
     public static Vector3 Arrive(Transform self, Vector3 Target, float slowRadius)
     {
         Vector3 dir = Target - self.position;
