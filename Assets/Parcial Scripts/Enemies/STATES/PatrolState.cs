@@ -9,12 +9,19 @@ public class PatrolState : State
 
     public override void Enter()
     {
-        
+        Debug.Log("Entering Patrol State");
     }
 
     public override void Update (bool canSeePlayer)
     {
         fsm.enemy.Wander();
+        fsm.enemy.DrainStamina();
+
+        if (!fsm.enemy.HasStamina)
+        {
+            fsm.ToRest();
+            return;
+        }
 
         if (canSeePlayer)
         {

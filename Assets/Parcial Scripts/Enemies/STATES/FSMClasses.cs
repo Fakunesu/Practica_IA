@@ -9,6 +9,7 @@ public class FSMClasses : MonoBehaviour
     private FreezeState freezeState;
     private AttackState attackState;
     private EvadeState evadeState;
+    private RestState restState;
 
     public EnemyControllerFSM enemy;
 
@@ -22,6 +23,7 @@ public class FSMClasses : MonoBehaviour
         freezeState = new FreezeState(this);
         attackState = new AttackState(this);
         evadeState = new EvadeState(this);
+        restState = new RestState(this);
 
         currentState = patrolState;
         currentState.Enter();
@@ -73,6 +75,11 @@ public class FSMClasses : MonoBehaviour
     public void ToEvade()
     {
         ChangeState(evadeState);
+    }
+
+    public void ToRest() 
+    {   
+        ChangeState(restState);
     }
 
 

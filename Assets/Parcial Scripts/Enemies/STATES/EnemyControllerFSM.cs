@@ -24,6 +24,14 @@ public class EnemyControllerFSM : MonoBehaviour
     private bool isAttacking = false;
     private Coroutine freezeRoutine;
 
+    [SerializeField] private float currentStamina = 100f;
+    [SerializeField] private float maxStamina = 100f;
+    [SerializeField] private float staminaRegenRate = 300f;
+    [SerializeField] private float staminaDepletionRate = 30f;
+
+    public bool HasStamina => currentStamina > 0f;
+    public bool IsStaminaFull => currentStamina >= maxStamina;
+
     private void Awake()
     {
         fsm = GetComponent<FSMClasses>();
@@ -135,6 +143,23 @@ public class EnemyControllerFSM : MonoBehaviour
         {
             transform.forward = Vector3.Lerp(transform.forward, dir, Time.deltaTime * rotationSpeed);
         }
+    }
+
+    public void DrainStamina()
+    {
+        currentStamina -= staminaDepletionRate * Time.deltaTime;
+        currentStamina = Mathf.Clamp(currentStamina, 0f, maxStamina);
+    }
+
+    public void RegenerateStamina()
+    {
+        currentStamina += staminaRegenRate * Time.deltaTime;
+        currentStamina = Mathf.Clamp(currentStamina, 0f, maxStamina);
+    }
+
+    public void StopMoving()
+    {
+        dir = Vector3.zero;
     }
 
 }
