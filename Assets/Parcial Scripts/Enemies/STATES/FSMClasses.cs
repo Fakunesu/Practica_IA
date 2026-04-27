@@ -32,7 +32,7 @@ public class FSMClasses : MonoBehaviour
     // Update is called once per frame
     public void UpdateState(bool canSeePlayer)
     {
-        if(enemy.IsInDisadvantage())
+        if(enemy.ShouldEvade())
         {
             ChangeState(evadeState);
         }

@@ -4,7 +4,13 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Parcial_1.unity
+    guid: 1eeaaeb919265a4448f010e2f7a61e88
+  - enabled: 1
+    path: Assets/Scenes/Win.unity
+    guid: fbaa501e21f28314e83e9d85de48865b
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: a842ea7b985d94a4880387bbc634124f, type: 3}
   m_UseUCBPForAssetBundles: 0

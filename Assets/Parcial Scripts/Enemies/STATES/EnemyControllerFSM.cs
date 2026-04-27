@@ -28,6 +28,8 @@ public class EnemyControllerFSM : MonoBehaviour
     private bool isAttacking = false;
     private Coroutine freezeRoutine;
 
+    [SerializeField] private float evadeDistance = 6f;
+
     [SerializeField] private float currentStamina = 100f;
     [SerializeField] private float maxStamina = 100f;
     [SerializeField] private float staminaRegenRate = 300f;
@@ -74,6 +76,17 @@ public class EnemyControllerFSM : MonoBehaviour
         {
             return false;
         }
+    }
+
+    public bool ShouldEvade()
+    {
+        return IsPlayerCloseForEvade() && IsInDisadvantage();
+    }
+
+    public bool IsPlayerCloseForEvade()
+    {
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        return distanceToPlayer <= evadeDistance;
     }
 
 

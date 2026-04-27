@@ -105,7 +105,6 @@ public class EnemyController : MonoBehaviour
 
     public bool IsInRange()
     {
-        Debug.Log("pregunta si ataca");
         if (los.IsRangeAttack(transform, player.transform))
         {
             return true;
@@ -118,7 +117,6 @@ public class EnemyController : MonoBehaviour
 
     public void PatrollingWaypoints()
     {
-        Debug.Log(currentWaypointIndex);
         if (wayPoints == null || wayPoints.Count == 0)
         {
             Debug.Log("No hay waypoints");
@@ -173,7 +171,7 @@ public class EnemyController : MonoBehaviour
 
     public void EvadePlayer()
     {
-        dir = SteeringBehaviour.Flee(transform, player.transform.transform.position);
+        dir = SteeringBehaviour.Flee(transform, player.transform.position);
     }
 
     public void ArriveToPlayer()

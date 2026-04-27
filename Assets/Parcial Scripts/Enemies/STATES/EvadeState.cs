@@ -16,7 +16,7 @@ public class EvadeState : State
     {
         fsm.enemy.Flee();
 
-        if(!fsm.enemy.IsInDisadvantage())
+        if(!fsm.enemy.ShouldEvade())
         {
             if(canSeePlayer)
             {
