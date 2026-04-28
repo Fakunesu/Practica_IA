@@ -79,24 +79,29 @@ public class EnemyTree : MonoBehaviour
 
     private void Attack() 
     {
+
         controller.Attack();
     }
     private void Chasing()
     {
+
         controller.Seek();
     }
     private void Rest()
     {
+
         controller.Rest();
     }
 
     private void Patrol()
     {
+
         controller.PatrollingWaypoints();
     }
     private void RunAway()
     {
+        
         controller.EvadePlayer();
-        Debug.Log("corre");
+
     }
 }

@@ -52,11 +52,25 @@ public class EnemyController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         los = GetComponent<LineOfSight>();
         desitionTree = GetComponent<EnemyTree>();
-        playerStats = player.GetComponent<PlayerMovementController>();
-        playerRB= player.GetComponent<Rigidbody>();
-        wanderDirection = transform.forward;
-        context = new EnemyContext { self = transform, player = player.transform, los = los };
 
+        if (player == null)
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+        }
+
+        if (player != null)
+        {
+            playerStats = player.GetComponent<PlayerMovementController>();
+            playerRB = player.GetComponent<Rigidbody>();
+            context = new EnemyContext
+            {
+                self = transform,
+                player = player.transform,
+                los = los
+            };
+        }
+
+        wanderDirection = transform.forward;
     }
 
     private void Start()
@@ -64,11 +78,19 @@ public class EnemyController : MonoBehaviour
         
     }
 
-    public void Update()
+    private void Update()
     {
-        context.player = player.transform;
+        if (context != null && player != null)
+        {
+            context.player = player.transform;
+        }
+    }
+
+    private void FixedUpdate()
+    {
         Move(dir);
     }
+
 
     public bool HasStamina()
     {
@@ -80,16 +102,14 @@ public class EnemyController : MonoBehaviour
     }
     public bool IsSeeingPlayer()
     {
-        if (los.IsRange(transform, player.transform))
-        {
-
-            return true;
-        }
-        else
+        if (player == null || los == null)
         {
             return false;
         }
-        
+
+        bool canSeePlayer = los.IsRange(transform, player.transform);
+
+        return canSeePlayer;
     }
 
     public bool IsInDisadvantage()
@@ -119,50 +139,47 @@ public class EnemyController : MonoBehaviour
 
     public void PatrollingWaypoints()
     {
+
         if (wayPoints == null || wayPoints.Count == 0)
         {
-            Debug.Log("No hay waypoints");
             return;
         }
-        if (wayPoints[currentWaypointIndex] == null) return;
+
+        if (wayPoints[currentWaypointIndex] == null)
+        {
+            return;
+        }
 
         Transform currentWaypoint = wayPoints[currentWaypointIndex];
 
         dir = SteeringBehaviour.Seek(transform, currentWaypoint.position);
 
-        dir.y = 0f;
-        dir.Normalize();
 
         if ((currentWaypoint.position - transform.position).magnitude < minDistanceToWaypoint)
         {
             if (currentWaypointIndex == 0)
             {
-
                 rightPatrol = true;
-
             }
-            else if (currentWaypointIndex == wayPoints.Count-1)
+            else if (currentWaypointIndex == wayPoints.Count - 1)
             {
                 rightPatrol = false;
             }
 
-            if (rightPatrol == true)
+            if (rightPatrol)
             {
                 currentWaypointIndex++;
-
             }
-            else if (rightPatrol == false)
+            else
             {
                 currentWaypointIndex--;
             }
         }
-        Vector3 moveDirection = dir.normalized;
-        dir = moveDirection;
 
-        if (moveDirection != Vector3.zero)
+        if (dir != Vector3.zero)
         {
-            transform.forward = moveDirection;
-            stamina-=Time.deltaTime;
+            transform.forward = dir;
+            stamina -= Time.deltaTime;
         }
     }
 
@@ -218,7 +235,7 @@ public class EnemyController : MonoBehaviour
 
     public void Attack()
     {
-        Debug.Log("Ataco");
+
     }
     public void Wander()
     {
@@ -237,13 +254,40 @@ public class EnemyController : MonoBehaviour
     }
 
     private void Move(Vector3 dir)
-    {   
+    {
+        if (rb == null)
+        {
+            return;
+        }
+
         rb.linearVelocity = dir.normalized * speed;
 
         if (dir != Vector3.zero)
         {
-            transform.forward = Vector3.Lerp(transform.forward, dir, Time.deltaTime * rotationSpeed);
+            transform.forward = Vector3.Lerp(
+                transform.forward,
+                dir,
+                Time.deltaTime * rotationSpeed
+            );
         }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        // Si el enemigo toca al player, reinicio la escena.
+        if (other.CompareTag("Player"))
+        {
+            RestartScene();
+        }
+    }
+
+    public void RestartScene()
+    {
+        // Obtengo la escena actual.
+        Scene currentScene = SceneManager.GetActiveScene();
+
+        // La cargo de nuevo para reiniciar.
+        SceneManager.LoadScene(currentScene.name);
     }
 
 }

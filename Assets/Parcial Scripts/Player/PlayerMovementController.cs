@@ -37,8 +37,6 @@ public class PlayerMovementController : MonoBehaviour
     // Velocidad vertical usada para aplicar gravedad.
     private Vector3 velocity;
 
-    // Propiedad pública para que otros scripts puedan saber si el power up está activo,
-    // pero sin poder modificar directamente la variable privada.
     public bool IsPowerUpped => isPowerUpped;
 
     private void Awake()

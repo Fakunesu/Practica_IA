@@ -9,7 +9,7 @@ public class RestState : State
 
     public override void Enter()
     {
-        Debug.Log("Entering Rest State");
+
         fsm.enemy.StopMoving();
     }
 

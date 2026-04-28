@@ -147,10 +147,10 @@ public class EnemyControllerFSM : MonoBehaviour
             // Mientras ataca, no se mueve.
             dir = Vector3.zero;
 
-            Debug.Log("Attacking Player");
+
         }
 
-        Debug.Log("Deja de atacar Player");
+
     }
 
     public virtual void PatrolWaypoints()
@@ -320,10 +320,10 @@ public class EnemyControllerFSM : MonoBehaviour
         );
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void OnTriggerEnter(Collider other)
     {
         // Si el enemigo toca al player, reinicio la escena.
-        if (collision.gameObject.CompareTag("Player"))
+        if (other.CompareTag("Player"))
         {
             RestartScene();
         }

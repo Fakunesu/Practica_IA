@@ -11,7 +11,6 @@ public class AttackState : State
     public override void Enter()
     {
         fsm.enemy.Attack();
-        Debug.Log("Entering Attack State");
     }
 
     public override void Exit() 

@@ -98,7 +98,6 @@ public class RouletteEnemyController : EnemyControllerFSM
         currentWaypoint = GetWaypointFromAction(currentWaypointAction);
 
         // Debug para ver en consola qué waypoint eligió.
-        Debug.Log("Roulette waypoint selected: " + currentWaypointAction);
     }
 
     // Este método transforma el resultado de la ruleta en un waypoint concreto.

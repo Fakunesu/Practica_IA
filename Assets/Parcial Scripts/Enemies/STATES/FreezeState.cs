@@ -14,7 +14,7 @@ public class FreezeState : State
     {
         timer = freezeTime;
         fsm.enemy.FreezePlayer(freezeTime);
-        Debug.Log("Entering Freeze State");
+
     }
 
     public override void Update(bool canSeePlayer)
