@@ -10,7 +10,7 @@ public class AttackState : State
     
     public override void Enter()
     {
-        fsm.enemy.Attack();
+        fsm.enemy.StopMoving();
     }
 
     public override void Exit() 
@@ -22,7 +22,11 @@ public class AttackState : State
     {
         float distance = Vector3.Distance(fsm.enemy.transform.position, fsm.enemy.player.position);
         
-        if (distance > 2f)
+        if (distance <= 2f)
+        {
+            fsm.enemy.Attack();
+        }
+        else
         {
             fsm.ToPursuit();
         }

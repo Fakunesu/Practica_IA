@@ -20,6 +20,7 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private float stamina;
     [SerializeField] private float speed = 5;
     [SerializeField] private float chasingSpeed = 10f;
+    [SerializeField] private float attackDistance = 1.5f;
 
     [Header("SteeringBehaviour")]
     private Vector3 dir;
@@ -221,7 +222,7 @@ public class EnemyController : MonoBehaviour
 
     public void Attack()
     {
-
+         RestartScene();    
     }
 
     public void Wander()
@@ -259,14 +260,6 @@ public class EnemyController : MonoBehaviour
                 dir,
                 Time.deltaTime * rotationSpeed
             );
-        }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            RestartScene();
         }
     }
 

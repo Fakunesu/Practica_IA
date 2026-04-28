@@ -20,6 +20,7 @@ public class EnemyControllerFSM : MonoBehaviour
 
     private Vector3 dir;
     private bool isAttacking = false;
+    private float attackDistance = 3f;
     private Coroutine freezeRoutine;
 
     [SerializeField] private float evadeDistance = 6f;
@@ -97,8 +98,9 @@ public class EnemyControllerFSM : MonoBehaviour
 
     public void Attack()
     {
-        isAttacking = true;
-        dir = Vector3.zero;
+        StopMoving();
+        LookAtPlayer();
+        RestartScene();
     }
 
     // Patrulla por waypoints en orden.
@@ -233,11 +235,11 @@ public class EnemyControllerFSM : MonoBehaviour
         );
     }
 
-    private void OnTriggerEnter(Collider other)
+    public void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            RestartScene();
+            Attack();
         }
     }
 
