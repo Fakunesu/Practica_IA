@@ -10,6 +10,8 @@ public class EnemyControllerFSM : MonoBehaviour
     // Referencia al player para poder perseguirlo, escapar o mirarlo.
     public Transform player;
 
+    private Rigidbody rb;
+
     // Referencia al script del player, para saber si está con power up.
     private PlayerMovementController playerStats;
 
@@ -68,6 +70,7 @@ public class EnemyControllerFSM : MonoBehaviour
         // Busco los componentes necesarios en el mismo enemigo.
         fsm = GetComponent<FSMClasses>();
         los = GetComponent<LineOfSight>();
+        rb = player.GetComponent<Rigidbody>();
     }
 
     protected virtual void Start()
@@ -77,6 +80,7 @@ public class EnemyControllerFSM : MonoBehaviour
 
         // Guardo referencias del player para consultar estados o modificarlo.
         playerStats = player.GetComponent<PlayerMovementController>();
+
     }
 
     private void Update()
@@ -226,8 +230,7 @@ public class EnemyControllerFSM : MonoBehaviour
 
     private IEnumerator FreezeCoroutine(float duration)
     {
-        // Busco el Rigidbody del player.
-        Rigidbody rb = player.GetComponent<Rigidbody>();
+       
 
         if (rb != null)
         {
