@@ -9,7 +9,6 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private GameObject player;
     private Rigidbody playerRB;
 
-    //"Scripts"
     private LineOfSight los;
     private EnemyTree desitionTree;
     private EnemyContext context;
@@ -30,7 +29,6 @@ public class EnemyController : MonoBehaviour
     private Vector3 wanderDirection;
     private float wanderTime;
     [SerializeField] private float WanderchangeInterval = 1.5f;
-    //private bool isAttacking = false;
     [SerializeField] private float maxPredictionTime = 2f;
     [SerializeField] private float arriveRadius = 3f;
 
@@ -44,8 +42,6 @@ public class EnemyController : MonoBehaviour
     [Header("Rest")]
     [SerializeField] private float timer = 5f;
     [SerializeField] float counter;
-
-
 
     private void Awake()
     {
@@ -62,6 +58,7 @@ public class EnemyController : MonoBehaviour
         {
             playerStats = player.GetComponent<PlayerMovementController>();
             playerRB = player.GetComponent<Rigidbody>();
+
             context = new EnemyContext
             {
                 self = transform,
@@ -71,11 +68,6 @@ public class EnemyController : MonoBehaviour
         }
 
         wanderDirection = transform.forward;
-    }
-
-    private void Start()
-    {
-        
     }
 
     private void Update()
@@ -91,15 +83,12 @@ public class EnemyController : MonoBehaviour
         Move(dir);
     }
 
-
+    // Preguntas que usa el Decision Tree para decidir qué acción ejecutar.
     public bool HasStamina()
     {
-        if (stamina <= 0)
-        {
-            return false;
-        }
-        else { return true; }
+        return stamina > 0;
     }
+
     public bool IsSeeingPlayer()
     {
         if (player == null || los == null)
@@ -107,39 +96,32 @@ public class EnemyController : MonoBehaviour
             return false;
         }
 
-        bool canSeePlayer = los.IsRange(transform, player.transform);
-
-        return canSeePlayer;
+        return los.IsRange(transform, player.transform);
     }
 
     public bool IsInDisadvantage()
     {
-        if (playerStats.IsPowerUpped == true)
-        {
-            return true;
-        }
-        else
+        if (playerStats == null)
         {
             return false;
         }
-        
+
+        return playerStats.IsPowerUpped;
     }
 
     public bool IsInRange()
     {
-        if (los.IsRangeAttack(transform, player.transform))
-        {
-            return true;
-        }
-        else
+        if (player == null || los == null)
         {
             return false;
         }
+
+        return los.IsRangeAttack(transform, player.transform);
     }
 
+    // Patrulla entre waypoints, yendo y volviendo por la lista.
     public void PatrollingWaypoints()
     {
-
         if (wayPoints == null || wayPoints.Count == 0)
         {
             return;
@@ -153,7 +135,6 @@ public class EnemyController : MonoBehaviour
         Transform currentWaypoint = wayPoints[currentWaypointIndex];
 
         dir = SteeringBehaviour.Seek(transform, currentWaypoint.position);
-
 
         if ((currentWaypoint.position - transform.position).magnitude < minDistanceToWaypoint)
         {
@@ -197,15 +178,21 @@ public class EnemyController : MonoBehaviour
     {
         dir = SteeringBehaviour.Arrive(transform, player.transform.position, arriveRadius);
     }
+
     public void Pursue()
     {
         Vector3 direction = player.transform.position - transform.position;
         direction.y = 0;
+
         Vector3 moveDirection = direction.normalized;
 
         dir = moveDirection;
 
-        transform.forward = Vector3.Lerp(transform.forward, moveDirection, Time.deltaTime * rotationSpeed);
+        transform.forward = Vector3.Lerp(
+            transform.forward,
+            moveDirection,
+            Time.deltaTime * rotationSpeed
+        );
     }
 
     public void Patrol()
@@ -213,46 +200,49 @@ public class EnemyController : MonoBehaviour
         transform.Rotate(0, rotationSpeed * Time.deltaTime, 0);
     }
 
+    // Descansa hasta recuperar stamina.
     public void Rest()
     {
         counter += Time.deltaTime;
         dir = Vector3.zero;
 
-        if(los.IsRange(transform, player.transform))
+        if (los.IsRange(transform, player.transform))
         {
             Seek();
         }
 
-        if(counter > timer)
+        if (counter > timer)
         {
             stamina = maxStamina;
             counter = 0;
             return;
         }
-
     }
-
 
     public void Attack()
     {
 
     }
+
     public void Wander()
     {
         wanderTime -= Time.deltaTime;
+
         if (wanderTime <= 0f)
         {
             wanderDirection = SteeringBehaviour.Wander(wanderDirection, 180f);
             wanderTime = WanderchangeInterval;
         }
-        dir = wanderDirection;
 
+        dir = wanderDirection;
     }
+
     public void Seek()
     {
         dir = SteeringBehaviour.Seek(transform, player.transform.position);
     }
 
+    // Aplica el movimiento final según la dirección que haya elegido el árbol.
     private void Move(Vector3 dir)
     {
         if (rb == null)
@@ -274,7 +264,6 @@ public class EnemyController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Si el enemigo toca al player, reinicio la escena.
         if (other.CompareTag("Player"))
         {
             RestartScene();
@@ -283,11 +272,7 @@ public class EnemyController : MonoBehaviour
 
     public void RestartScene()
     {
-        // Obtengo la escena actual.
         Scene currentScene = SceneManager.GetActiveScene();
-
-        // La cargo de nuevo para reiniciar.
         SceneManager.LoadScene(currentScene.name);
     }
-
 }

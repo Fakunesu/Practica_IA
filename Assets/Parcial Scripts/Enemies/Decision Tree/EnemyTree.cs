@@ -1,21 +1,9 @@
-using NUnit.Framework;
-using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 public class EnemyTree : MonoBehaviour
 {
     private LineOfSight los;
     private EnemyController controller;
-
-    [Header("Chase")]
-    [SerializeField] private GameObject player;
-    [SerializeField] private float losDistance;
-    [SerializeField] private float losAngle;
-    [SerializeField] private LayerMask losWalls;
-    [SerializeField] private float chasingSpeed = 6f;
-
 
     private ITreeeNode root;
 
@@ -25,24 +13,24 @@ public class EnemyTree : MonoBehaviour
         controller = GetComponent<EnemyController>();
     }
 
-    void Start()
+    private void Start()
     {
-        ActionNode attack = new ActionNode(Attack);//falta
-        ActionNode chasing = new ActionNode(Chasing);//esta
-        ActionNode runAway = new ActionNode(RunAway);//esta
-        ActionNode patrol = new ActionNode(Patrol);//esta
-        ActionNode rest = new ActionNode(Rest);//esta
+        ActionNode attack = new ActionNode(Attack);
+        ActionNode chasing = new ActionNode(Chasing);
+        ActionNode runAway = new ActionNode(RunAway);
+        ActionNode patrol = new ActionNode(Patrol);
+        ActionNode rest = new ActionNode(Rest);
 
-        QuestionNode isInRange = new QuestionNode(()=>controller.IsInRange(), attack, chasing);//esta
-        QuestionNode isInDisadvantage = new QuestionNode(()=>controller.IsInDisadvantage(), runAway, isInRange);//esta 
-        QuestionNode isSeeingPlayer = new QuestionNode(() => controller.IsSeeingPlayer(), isInDisadvantage, patrol);//esta
-        QuestionNode hasStamina = new QuestionNode(() => controller.HasStamina(), isSeeingPlayer, rest);//esta
+        // Armo el árbol de decisión desde las acciones finales hacia la raíz.
+        QuestionNode isInRange = new QuestionNode(() => controller.IsInRange(), attack, chasing);
+        QuestionNode isInDisadvantage = new QuestionNode(() => controller.IsInDisadvantage(), runAway, isInRange);
+        QuestionNode isSeeingPlayer = new QuestionNode(() => controller.IsSeeingPlayer(), isInDisadvantage, patrol);
+        QuestionNode hasStamina = new QuestionNode(() => controller.HasStamina(), isSeeingPlayer, rest);
 
         root = hasStamina;
-        
     }
 
-    void Update()
+    private void Update()
     {
         if (root != null)
         {
@@ -50,58 +38,28 @@ public class EnemyTree : MonoBehaviour
         }
     }
 
-
-    /*private bool IsInDisadvantage()
+    private void Attack()
     {
-        
-    }*/
-
-   /* private bool IsSeeingPlayer()
-    {
-        if (los.Sigth(player, losDistance, losAngle, losWalls) == true)
-        {
-
-            return true;
-        }
-        else 
-        { 
-
-            return false; 
-        }
-    }*/
-    
-    //private bool IsInRange()
-    //{
-    //    Debug.Log("is in range");
-    //    return true;
-    //}
-
-
-    private void Attack() 
-    {
-
         controller.Attack();
     }
+
     private void Chasing()
     {
-
         controller.Seek();
     }
+
     private void Rest()
     {
-
         controller.Rest();
     }
 
     private void Patrol()
     {
-
         controller.PatrollingWaypoints();
     }
+
     private void RunAway()
     {
-        
         controller.EvadePlayer();
-
     }
 }
