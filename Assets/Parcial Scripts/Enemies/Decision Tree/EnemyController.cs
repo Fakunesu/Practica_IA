@@ -14,6 +14,7 @@ public class EnemyController : MonoBehaviour
     private EnemyTree desitionTree;
     private EnemyContext context;
     private PlayerMovementController playerStats;
+    private Rigidbody rb;
 
     [Header("Enemy Stats")]
     private float maxStamina = 15;
@@ -48,6 +49,7 @@ public class EnemyController : MonoBehaviour
 
     private void Awake()
     {
+        rb = GetComponent<Rigidbody>();
         los = GetComponent<LineOfSight>();
         desitionTree = GetComponent<EnemyTree>();
         playerStats = player.GetComponent<PlayerMovementController>();
@@ -155,7 +157,7 @@ public class EnemyController : MonoBehaviour
             }
         }
         Vector3 moveDirection = dir.normalized;
-        transform.position += moveDirection * speed * Time.deltaTime;
+        dir = moveDirection;
 
         if (moveDirection != Vector3.zero)
         {
@@ -184,7 +186,7 @@ public class EnemyController : MonoBehaviour
         direction.y = 0;
         Vector3 moveDirection = direction.normalized;
 
-        transform.position += moveDirection * speed * Time.deltaTime;
+        dir = moveDirection;
 
         transform.forward = Vector3.Lerp(transform.forward, moveDirection, Time.deltaTime * rotationSpeed);
     }
@@ -235,8 +237,8 @@ public class EnemyController : MonoBehaviour
     }
 
     private void Move(Vector3 dir)
-    {
-        transform.position += dir * speed * Time.deltaTime;
+    {   
+        rb.linearVelocity = dir.normalized * speed;
 
         if (dir != Vector3.zero)
         {
