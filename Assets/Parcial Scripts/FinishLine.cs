@@ -3,13 +3,16 @@ using UnityEngine.SceneManagement;
 
 public class FinishLine : MonoBehaviour
 {
-    [SerializeField] private string winSceneName = "Win";
+    private EnemyControllerFSM restartScene;
+
+    private string finishGameScene = "Parcial_1";
     public void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
             Debug.Log("Finish Line Reached!");
-            SceneManager.LoadScene(winSceneName);
+            Scene currentScene = SceneManager.GetActiveScene();
+            SceneManager.LoadScene(currentScene.name);
         }
     }
 }

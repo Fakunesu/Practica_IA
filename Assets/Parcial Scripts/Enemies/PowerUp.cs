@@ -9,7 +9,7 @@ public class PowerUp : MonoBehaviour
             PlayerMovementController playerStats = other.GetComponent<PlayerMovementController>();
             if (playerStats != null)
             {
-                playerStats.isPowerUpped = true;
+                playerStats.ActivatePowerUp();
                 Destroy(gameObject);
             }
         }

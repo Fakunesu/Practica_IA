@@ -92,7 +92,7 @@ public class EnemyController : MonoBehaviour
 
     public bool IsInDisadvantage()
     {
-        if (playerStats.isPowerUpped == true)
+        if (playerStats.IsPowerUpped == true)
         {
             return true;
         }
