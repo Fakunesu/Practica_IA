@@ -66,8 +66,8 @@ public class GridGenerator : MonoBehaviour
     {
         if (w > 15 && w < 35 && h > 20 && h < 25)
         {
-            node.SetCost(1f);
-            node.SetColor(Color.gray);
+            node.SetCost(10f);
+            node.SetColor(Color.red);
         }
         else
         {
