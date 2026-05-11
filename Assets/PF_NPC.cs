@@ -6,15 +6,13 @@ public class PF_NPC : MonoBehaviour
 
     public Node start, end;
     public float speed = 2f;
-
     private List<Node> path = new List<Node>(); 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
     void Start()
     {
         
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (path.Count > 0) 
@@ -28,6 +26,10 @@ public class PF_NPC : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.P))
         {
             path = PathFinding.BFS(start, end);
+            for (int i = 0; i < path.Count; i++)
+            {
+                path[i].SetColor(Color.Lerp(Color.red, Color.yellow, (float)i / path.Count));
+            }
         }
     }
 }

@@ -6,17 +6,18 @@ using UnityEngine;
 public class Node : MonoBehaviour
 {
 
-    [SerializeField] List<Node> neighbors = new( );
+    [SerializeField] List<Node> neighbors = new();
     [SerializeField] private int x, y;
-    [SerializeField] float cost = 1f;
-
-
-
+    private Renderer rend;
     public List<Node> Neighbors => neighbors;
 
-    public float Cost => cost;
+    [Header("Cost")]
+    [SerializeField] private float cost = 1f;
+
     public int X => x;
     public int Y => y;
+
+    public float Cost => cost;
 
     public void SetIndexes(int w, int h)
     {
@@ -24,8 +25,22 @@ public class Node : MonoBehaviour
         y = h;
     }
 
-    public void SetNeighbors(List<Node> neighs)
+    public void SetNeighbors(List<Node> neighbors)
     {
-        neighbors = neighs;
+        this.neighbors = neighbors;
+    }
+
+    public void SetCost(float newCost)
+    {
+        cost = newCost;
+    }
+
+    public void SetColor(Color color)
+    {
+        if (rend == null)
+        {
+            rend = GetComponent<Renderer>();
+        }
+        rend.material.color = color;
     }
 }
