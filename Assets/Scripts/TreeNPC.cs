@@ -101,13 +101,13 @@ public class TreeNPC : MonoBehaviour
         {
             HasCapacity();
         }
-        Debug.Log("Collecting wood");
+
     }
 
     private void DepositWood()
     {
         woodAmount = 0;
-        Debug.Log("Depositing wood");
+
     }
 
     private void Heal()
@@ -118,7 +118,7 @@ public class TreeNPC : MonoBehaviour
             if (currentHP > maxHP)
                 currentHP = maxHP;
 
-            Debug.Log("Healing");
+
         }
     }
 
@@ -128,7 +128,7 @@ public class TreeNPC : MonoBehaviour
 
         Vector3 dir = target.position - transform.position;
         transform.position += dir.normalized * speed * Time.deltaTime;
-        Debug.Log("Going to wood");
+
     }
 
     private void GoToHouse()
@@ -137,21 +137,21 @@ public class TreeNPC : MonoBehaviour
 
         Vector3 dir = safePlace.position - transform.position;
         transform.position += dir.normalized * speed * Time.deltaTime;
-        Debug.Log("Going to house");
+
     }
 
     private void GoToStorage()
     {
         if (storage == null)
         {
-            Debug.Log("NoStorage");
+
             return;
         }
         else
         {
             Vector3 dir = storage.position - transform.position;
             transform.position += dir.normalized * speed * Time.deltaTime;
-            Debug.Log("Going to storage");
+
         }
     }
 
