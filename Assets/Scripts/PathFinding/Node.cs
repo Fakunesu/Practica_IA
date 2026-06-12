@@ -1,5 +1,3 @@
-using NUnit.Framework;
-using Unity.VisualScripting;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,10 +12,14 @@ public class Node : MonoBehaviour
     [Header("Cost")]
     [SerializeField] private float cost = 1f;
 
+    [Header("Walkable")]
+    [SerializeField] private bool isWalkable = true;
+
     public int X => x;
     public int Y => y;
 
     public float Cost => cost;
+    public bool IsWalkable => isWalkable;
 
     public void SetIndexes(int w, int h)
     {
@@ -33,6 +35,16 @@ public class Node : MonoBehaviour
     public void SetCost(float newCost)
     {
         cost = newCost;
+    }
+
+    public void SetWalkable(bool value)
+    {
+        isWalkable = value;
+
+        if (!isWalkable)
+        {
+            SetColor(Color.black);
+        }
     }
 
     public void SetColor(Color color)

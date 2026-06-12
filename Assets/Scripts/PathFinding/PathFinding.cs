@@ -96,6 +96,90 @@ public class PathFinding
         return ReconstructPath(end, cameFrom);
     }
 
+    public static List<Node> AStar(Node start, Node end)
+    {
+        if (start == null || end == null)
+        {
+            Debug.LogWarning("A*: el nodo inicial o final es null.");
+            return new List<Node>();
+        }
+
+        PriorityQueue<Node> frontier = new PriorityQueue<Node>();
+        frontier.Enqueue(start, 0f);
+
+        Dictionary<Node, Node> cameFrom = new Dictionary<Node, Node>();
+        Dictionary<Node, float> costSoFar = new Dictionary<Node, float>();
+
+        cameFrom[start] = null;
+        costSoFar[start] = 0f;
+
+        int visitedNodes = 0;
+
+        while (!frontier.IsEmpty)
+        {
+            Node current = frontier.Dequeue();
+            visitedNodes++;
+
+            current.SetColor(Color.cyan);
+
+            if (current == end)
+            {
+                Debug.Log(
+                    "A* encontró el objetivo. Nodos visitados: " +
+                    visitedNodes
+                );
+
+                break;
+            }
+
+            foreach (Node next in current.Neighbors)
+            {
+                if (next == null || !next.IsWalkable)
+                    continue;
+
+                float newCost =
+                    costSoFar[current] +
+                    next.Cost;
+
+                bool hasNoCost = !costSoFar.ContainsKey(next);
+                bool foundCheaperPath =
+                    !hasNoCost &&
+                    newCost < costSoFar[next];
+
+                if (hasNoCost || foundCheaperPath)
+                {
+                    costSoFar[next] = newCost;
+                    cameFrom[next] = current;
+
+                    float priority =
+                        newCost +
+                        Heuristic(next, end);
+
+                    frontier.Enqueue(next, priority);
+                }
+            }
+        }
+
+        if (!cameFrom.ContainsKey(end))
+        {
+            Debug.LogWarning("A* no encontró un camino.");
+            return new List<Node>();
+        }
+
+        Debug.Log(
+            "Costo total de A*: " +
+            costSoFar[end]
+        );
+
+        return ReconstructPath(end, cameFrom);
+    }
+
+    private static float Heuristic(Node current, Node end)
+    {
+        return Mathf.Abs(current.X - end.X) +
+               Mathf.Abs(current.Y - end.Y);
+    }
+
     private static List<Node> ReconstructPath(Node end, Dictionary<Node, Node> cameFrom)
     {
         Node current = end;
@@ -113,5 +197,7 @@ public class PathFinding
 
         return path;
     }
+
+
 
 }
