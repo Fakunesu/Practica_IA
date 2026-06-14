@@ -166,7 +166,8 @@ public class GridGenerator : MonoBehaviour
 
     private void SetCostForNode(Node node, int w, int h)
     {
-        if (w > 15 && w < 35 && h > 20 && h < 25)
+        // Franja roja en el medio: transitable, pero cara
+        if (w >= 4 && w <= 7 && h >= 2 && h <= 4)
         {
             node.SetCost(10f);
             node.SetColor(Color.red);

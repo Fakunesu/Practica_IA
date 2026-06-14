@@ -9,23 +9,28 @@ public class PatrolState : State
 
     public override void Enter()
     {
-
+        fsm.enemy.StartPatrolPath();
     }
 
-    public override void Update (bool canSeePlayer)
+    public override void Update(bool canSeePlayer)
     {
-        fsm.enemy.PatrolWaypoints();
-        fsm.enemy.DrainStamina();
-
         if (!fsm.enemy.HasStamina)
         {
             fsm.ToRest();
             return;
         }
 
+        fsm.enemy.PatrolWaypoints();
+        fsm.enemy.DrainStamina();
+
         if (canSeePlayer)
         {
             fsm.ToPursuit();
         }
-    }   
+    }
+
+    public override void Exit()
+    {
+        fsm.enemy.StopMoving();
+    }
 }

@@ -2,14 +2,13 @@ using UnityEngine;
 
 public class RestState : State
 {
-    public RestState(FSMClasses fsm) : base(fsm) 
+    public RestState(FSMClasses fsm) : base(fsm)
     {
 
     }
 
     public override void Enter()
     {
-
         fsm.enemy.StopMoving();
     }
 
@@ -18,7 +17,7 @@ public class RestState : State
         fsm.enemy.StopMoving();
         fsm.enemy.RegenerateStamina();
 
-        if(fsm.enemy.IsStaminaFull)
+        if (fsm.enemy.IsStaminaFull)
         {
             fsm.ToPatrol();
         }
