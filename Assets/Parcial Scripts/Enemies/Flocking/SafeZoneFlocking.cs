@@ -4,6 +4,8 @@ public class SafeZoneFlocking : MonoBehaviour
 {
     [SerializeField] private Vector3 boxSize = new Vector3(5f, 2f, 5f);
     [SerializeField] private LayerMask agentMask;
+    [SerializeField] private WinCondition levelManager;
+
 
     private void Update()
     {
@@ -22,6 +24,7 @@ public class SafeZoneFlocking : MonoBehaviour
             if (agent == null)
                 continue;
 
+            levelManager.addSavedNPC();
             agent.Rescue();
         }
     }
