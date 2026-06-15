@@ -80,7 +80,6 @@ public class GridGenerator : MonoBehaviour
                 if (isBlocked)
                 {
                     newNode.SetCost(float.MaxValue);
-                    newNode.SetColor(Color.black);
                 }
                 else if (useCosts)
                 {
@@ -89,7 +88,6 @@ public class GridGenerator : MonoBehaviour
                 else
                 {
                     newNode.SetCost(1f);
-                    newNode.SetColor(Color.white);
                 }
 
                 nodeGrid[w + h * width] = newNode;
@@ -170,12 +168,10 @@ public class GridGenerator : MonoBehaviour
         if (w >= 4 && w <= 7 && h >= 2 && h <= 4)
         {
             node.SetCost(10f);
-            node.SetColor(Color.red);
         }
         else
         {
             node.SetCost(1f);
-            node.SetColor(Color.white);
         }
     }
 

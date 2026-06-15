@@ -18,8 +18,6 @@ public class PathFinding
             Node current = frontier.Dequeue();
             visitedNodes++;
 
-            current.SetColor(Color.cyan);
-
             if (current == end)
             {
                 Debug.Log("BFS encontró el objetivo. Nodos visitados: " + visitedNodes);
@@ -62,8 +60,6 @@ public class PathFinding
         {
             Node current = frontier.Dequeue();
             visitedNodes++;
-
-            current.SetColor(Color.blue);
 
             if (current == end)
             {
@@ -119,8 +115,6 @@ public class PathFinding
         {
             Node current = frontier.Dequeue();
             visitedNodes++;
-
-            current.SetColor(Color.cyan);
 
             if (current == end)
             {

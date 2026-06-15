@@ -37,10 +37,6 @@ public class PF_NPC : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.P))
         {
             path = PathFinding.BFS(start, end);
-            for (int i = 0; i < path.Count; i++)
-            {
-                path[i].SetColor(Color.Lerp(Color.red, Color.yellow, (float)i / path.Count));
-            }
         }
     }
 }

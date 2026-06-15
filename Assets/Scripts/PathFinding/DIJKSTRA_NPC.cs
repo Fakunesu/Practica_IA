@@ -23,11 +23,6 @@ public class Dijkstra_NPC : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.D))
         {
             path = PathFinding.Dijkstra(start, end);
-
-            for (int i = 0; i < path.Count; i++)
-            {
-                path[i].SetColor(Color.Lerp(Color.green, Color.yellow, (float)i / path.Count));
-            }
         }
 
         MoveThroughPath();

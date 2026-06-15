@@ -28,17 +28,6 @@ public class AStar_NPC : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.A))
         {
             path = PathFinding.AStar(start, end);
-
-            for (int i = 0; i < path.Count; i++)
-            {
-                path[i].SetColor(
-                    Color.Lerp(
-                        Color.magenta,
-                        Color.yellow,
-                        (float)i / path.Count
-                    )
-                );
-            }
         }
 
         MoveThroughPath();

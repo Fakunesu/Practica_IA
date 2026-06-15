@@ -6,7 +6,6 @@ public class Node : MonoBehaviour
 
     [SerializeField] List<Node> neighbors = new();
     [SerializeField] private int x, y;
-    private Renderer rend;
     public List<Node> Neighbors => neighbors;
 
     [Header("Cost")]
@@ -40,19 +39,6 @@ public class Node : MonoBehaviour
     public void SetWalkable(bool value)
     {
         isWalkable = value;
-
-        if (!isWalkable)
-        {
-            SetColor(Color.black);
-        }
     }
 
-    public void SetColor(Color color)
-    {
-        if (rend == null)
-        {
-            rend = GetComponent<Renderer>();
-        }
-        rend.material.color = color;
-    }
 }
