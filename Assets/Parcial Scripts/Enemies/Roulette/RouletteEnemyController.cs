@@ -70,18 +70,38 @@ public class RouletteEnemyController : EnemyControllerFSM
         switch (action)
         {
             case RouletteEnemyActions.Waypoint1:
+                waypoint1Chance = 0f;
+                waypoint2Chance = 40f;
+                waypoint3Chance = 20f;
+                waypoint4Chance = 30f;
                 return rouletteWaypoints[0];
 
             case RouletteEnemyActions.Waypoint2:
+                waypoint1Chance = 40f;
+                waypoint2Chance = 0f;
+                waypoint3Chance = 20f;
+                waypoint4Chance = 30f;
                 return rouletteWaypoints[1];
 
             case RouletteEnemyActions.Waypoint3:
+                waypoint1Chance = 30f;
+                waypoint2Chance = 40f;
+                waypoint3Chance = 0f;
+                waypoint4Chance = 30f;
                 return rouletteWaypoints[2];
 
             case RouletteEnemyActions.Waypoint4:
+                waypoint1Chance = 30f;
+                waypoint2Chance = 10f;
+                waypoint3Chance = 40f;
+                waypoint4Chance = 0f;
                 return rouletteWaypoints[3];
 
             default:
+                waypoint1Chance = 40f;
+                waypoint2Chance = 30f;
+                waypoint3Chance = 20f;
+                waypoint4Chance = 10f;
                 return rouletteWaypoints[0];
         }
     }
