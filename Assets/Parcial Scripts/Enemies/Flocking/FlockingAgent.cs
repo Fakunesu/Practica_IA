@@ -5,6 +5,8 @@ public class FlockingAgent : MonoBehaviour
     private FlockingManager manager;
     private Vector3 velocity;
 
+    private bool rescued = false;
+
     public void Initialize(FlockingManager newManager)
     {
         manager = newManager;
@@ -32,12 +34,14 @@ public class FlockingAgent : MonoBehaviour
         Vector3 separation = CalculateSeparation();
         Vector3 cohesion = CalculateCohesion();
         Vector3 alignment = CalculateAlignment();
+        Vector3 targetDirection = CalculateTargetDirection();
         Vector3 obstacleAvoidance = CalculateObstacleAvoidance();
 
         Vector3 finalDirection =
             separation * manager.SeparationWeight +
             cohesion * manager.CohesionWeight +
             alignment * manager.AlignmentWeight +
+            targetDirection * manager.TargetWeight +
             obstacleAvoidance * manager.ObstacleAvoidanceWeight;
 
         finalDirection.y = 0f;
@@ -59,52 +63,17 @@ public class FlockingAgent : MonoBehaviour
         }
     }
 
-    private void MoveSafely()
+    private Vector3 CalculateTargetDirection()
     {
-        Vector3 moveDirection = velocity.normalized;
+        Vector3 direction =
+            manager.CurrentTargetPosition - transform.position;
 
-        if (moveDirection.sqrMagnitude <= 0.001f)
-            return;
+        direction.y = 0f;
 
-        float moveDistance = velocity.magnitude * Time.deltaTime;
+        if (direction.sqrMagnitude <= 0.001f)
+            return Vector3.zero;
 
-        bool willHitObstacle = Physics.SphereCast(
-            transform.position,
-            manager.AgentRadius,
-            moveDirection,
-            out RaycastHit hit,
-            moveDistance + 0.05f,
-            manager.ObstacleMask,
-            QueryTriggerInteraction.Ignore
-        );
-
-        if (willHitObstacle)
-        {
-            Vector3 slideDirection = Vector3.ProjectOnPlane(
-                moveDirection,
-                hit.normal
-            );
-
-            slideDirection.y = 0f;
-
-            if (slideDirection.sqrMagnitude > 0.001f)
-            {
-                velocity = slideDirection.normalized * manager.Speed;
-
-                transform.position +=
-                    slideDirection.normalized *
-                    moveDistance *
-                    0.5f;
-            }
-            else
-            {
-                velocity = Vector3.zero;
-            }
-
-            return;
-        }
-
-        transform.position += velocity * Time.deltaTime;
+        return direction.normalized;
     }
 
     private Vector3 CalculateSeparation()
@@ -113,7 +82,7 @@ public class FlockingAgent : MonoBehaviour
 
         foreach (FlockingAgent agent in manager.Agents)
         {
-            if (agent == this)
+            if (agent == this || agent == null)
                 continue;
 
             float distance = Vector3.Distance(
@@ -145,7 +114,7 @@ public class FlockingAgent : MonoBehaviour
 
         foreach (FlockingAgent agent in manager.Agents)
         {
-            if (agent == this)
+            if (agent == this || agent == null)
                 continue;
 
             float distance = Vector3.Distance(
@@ -178,7 +147,7 @@ public class FlockingAgent : MonoBehaviour
 
         foreach (FlockingAgent agent in manager.Agents)
         {
-            if (agent == this)
+            if (agent == this || agent == null)
                 continue;
 
             float distance = Vector3.Distance(
@@ -240,12 +209,70 @@ public class FlockingAgent : MonoBehaviour
         return avoidDirection.normalized;
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void MoveSafely()
     {
-        if (!other.CompareTag("Player"))
+        Vector3 moveDirection = velocity.normalized;
+
+        if (moveDirection.sqrMagnitude <= 0.001f)
             return;
 
-        manager.RemoveAgent(this);
+        float moveDistance = velocity.magnitude * Time.deltaTime;
+
+        bool willHitObstacle = Physics.SphereCast(
+            transform.position,
+            manager.AgentRadius,
+            moveDirection,
+            out RaycastHit hit,
+            moveDistance + 0.05f,
+            manager.ObstacleMask,
+            QueryTriggerInteraction.Ignore
+        );
+
+        if (willHitObstacle)
+        {
+            Vector3 slideDirection = Vector3.ProjectOnPlane(
+                moveDirection,
+                hit.normal
+            );
+
+            slideDirection.y = 0f;
+
+            if (slideDirection.sqrMagnitude > 0.001f)
+            {
+                velocity = slideDirection.normalized * manager.Speed;
+
+                transform.position +=
+                    slideDirection.normalized *
+                    moveDistance *
+                    0.5f;
+            }
+            else
+            {
+                velocity = Vector3.zero;
+            }
+
+            return;
+        }
+
+        transform.position += velocity * Time.deltaTime;
+    }
+
+    
+
+    public void Rescue()
+    {
+        if (rescued)
+            return;
+
+        rescued = true;
+
+        if (manager != null)
+        {
+            manager.RemoveAgent(this);
+        }
+
+        Debug.Log("Bichito rescatado: " + gameObject.name);
+
         Destroy(gameObject);
     }
 
