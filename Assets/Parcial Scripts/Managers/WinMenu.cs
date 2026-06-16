@@ -5,6 +5,6 @@ public class WinMenu : MonoBehaviour
 {
     public void BackToGame()
     {
-        SceneManager.LoadScene("Parcial_1");
+        SceneManager.LoadScene("PathFinding");
     }
 }
