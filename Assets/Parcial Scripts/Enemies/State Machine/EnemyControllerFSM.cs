@@ -21,12 +21,12 @@ public class EnemyControllerFSM : MonoBehaviour
     [SerializeField] private float waypointThreshold = 0.5f;
     private int currentWaypointIndex = 0;
 
-    [Header("A* Patrol")]
+    [Header("A* Patrol")] //referencia a la grilla y tiempo entre recalculos de path
     [SerializeField] private GridGenerator grid;
     [SerializeField] private float repathTime = 0.5f;
 
-    private List<Node> currentPath = new List<Node>();
-    private int currentPathIndex = 0;
+    private List<Node> currentPath = new List<Node>(); //lista de nodos que forman el camino actual
+    private int currentPathIndex = 0; //índice del nodo actual en el camino
     private float repathTimer = 0f;
 
     private Vector3 dir;
@@ -130,10 +130,10 @@ public class EnemyControllerFSM : MonoBehaviour
     }
 
     // =========================================================
-    // PATRULLA CON A*
+    // A*
     // =========================================================
 
-    public bool HasActivePath
+    public bool HasActivePath //indica si el enemigo tiene un camino activo hacia el waypoint actual
     {
         get
         {
@@ -153,21 +153,21 @@ public class EnemyControllerFSM : MonoBehaviour
             return;
         }
 
-        currentPath.Clear();
-        currentPathIndex = 0;
+        currentPath.Clear();//limpio el camino actual
+        currentPathIndex = 0;//reinicio el índice del camino
 
-        CalculatePathToCurrentWaypoint();
+        CalculatePathToCurrentWaypoint();//calculo el camino hacia el waypoint actual
     }
 
     public virtual void PatrolWaypoints()
     {
-        if (wayPoints == null || wayPoints.Length == 0)
+        if (wayPoints == null || wayPoints.Length == 0) //valida que existan waypoints asignados
         {
             StopMoving();
             return;
         }
 
-        Transform currentWaypoint = wayPoints[currentWaypointIndex];
+        Transform currentWaypoint = wayPoints[currentWaypointIndex]; //toma la posicion del waypoint actual
 
         if (currentWaypoint == null)
         {
@@ -175,54 +175,54 @@ public class EnemyControllerFSM : MonoBehaviour
             return;
         }
 
-        bool reachedPathEnd = MoveThroughCurrentPath();
+        bool reachedPathEnd = MoveThroughCurrentPath(); //mueve al enemigo a lo largo del camino calculado hacia el waypoint actual, devuelve true si llegó al final del camino
 
-        float distanceToWaypoint = Vector3.Distance(
+        float distanceToWaypoint = Vector3.Distance( //mide distancia real al waypoint
             transform.position,
             currentWaypoint.position
         );
 
-        if (reachedPathEnd || distanceToWaypoint <= waypointThreshold)
+        if (reachedPathEnd || distanceToWaypoint <= waypointThreshold) //calcula un nuevo camino con A* hacia el siguiente waypoint si llegó al final del camino
         {
             GoToNextWaypoint();
             CalculatePathToCurrentWaypoint();
         }
     }
 
-    public void CalculatePathTo(Vector3 targetPosition)
+    public void CalculatePathTo(Vector3 targetPosition) //calcula el camino hacia una posición objetivo utilizando A*
     {
-        if (grid == null)
+        if (grid == null) //Revisa que haya una grid asignada, si no la hay, detiene el movimiento y muestra una advertencia en la consola
         {
             Debug.LogWarning("EnemyControllerFSM: falta asignar GridGenerator.");
             StopMoving();
             return;
         }
 
-        Node startNode = grid.GetClosestWalkableNode(transform.position);
+        Node startNode = grid.GetClosestWalkableNode(transform.position); //convierte la posición actual del enemigo y la posición objetivo en nodos de la grilla con metodo GetClosestWalkableNode
         Node endNode = grid.GetClosestWalkableNode(targetPosition);
 
-        if (startNode == null || endNode == null)
+        if (startNode == null || endNode == null) //Revisa que existan nodos válidos para el inicio y el final del camino
         {
             Debug.LogWarning("EnemyControllerFSM: no se encontró nodo inicial o final para A*.");
             StopMoving();
             return;
         }
 
-        currentPath = PathFinding.AStar(startNode, endNode);
-        currentPathIndex = 0;
+        currentPath = PathFinding.AStar(startNode, endNode); //llamamos al algoritmo A* para calcular el camino entre el nodo inicial y el nodo final, y guardamos el resultado en currentPath
+        currentPathIndex = 0;//reinicia el indice del camino para empezar a moverse desde el primer nodo del camino
 
-        SkipCloseNodes();
+        SkipCloseNodes(); //saltear nodos que ya estan demasiado cerca del enemigo para evitar que se quede atascado en el camino
     }
 
     private void CalculatePathToCurrentWaypoint()
     {
-        if (wayPoints == null || wayPoints.Length == 0)
+        if (wayPoints == null || wayPoints.Length == 0) //valida que existan waypoints asignados
         {
             StopMoving();
             return;
         }
 
-        Transform currentWaypoint = wayPoints[currentWaypointIndex];
+        Transform currentWaypoint = wayPoints[currentWaypointIndex];//toma la posicion del waypoint actual
 
         if (currentWaypoint == null)
         {
@@ -230,37 +230,37 @@ public class EnemyControllerFSM : MonoBehaviour
             return;
         }
 
-        CalculatePathTo(currentWaypoint.position);
+        CalculatePathTo(currentWaypoint.position); //obtiene la posición del waypoint actual y llama a CalculatePathTo para calcular el camino hacia ese waypoint utilizando A*
     }
 
-    public bool MoveThroughCurrentPath()
+    public bool MoveThroughCurrentPath() //devuelve un bool si ya termino el camino o si todavia esta recorriendo el camino
     {
-        if (currentPath == null || currentPath.Count == 0)
+        if (currentPath == null || currentPath.Count == 0) //revisa si no hay camino
         {
             StopMoving();
             return true;
         }
 
-        SkipCloseNodes();
+        SkipCloseNodes(); //saltea nodos que esten demasiado cerca del enemigo para evitar que se quede atascado en el camino
 
-        if (currentPathIndex >= currentPath.Count)
+        if (currentPathIndex >= currentPath.Count) //revisa si ya se paso del final del camino
         {
             StopMoving();
             return true;
         }
 
-        Node currentNode = currentPath[currentPathIndex];
+        Node currentNode = currentPath[currentPathIndex]; //si todavia hay camino agarra el nodo actual del camino usando currentPathIndex para seguir el camino paso a paso
 
-        if (currentNode == null)
+        if (currentNode == null) //si el nodo es nulo pasa al siguiente
         {
             currentPathIndex++;
             return false;
         }
 
-        Vector3 targetPosition = currentNode.transform.position;
+        Vector3 targetPosition = currentNode.transform.position; //obtiene la posicion del nodo
         targetPosition.y = transform.position.y;
 
-        Vector3 pathDirection = targetPosition - transform.position;
+        Vector3 pathDirection = targetPosition - transform.position;//calucla la dirección hacia el nodo actual restando la posición del enemigo a la posición del nodo
         pathDirection.y = 0f;
 
         if (pathDirection.magnitude <= 0.45f)
@@ -273,16 +273,16 @@ public class EnemyControllerFSM : MonoBehaviour
         return false;
     }
 
-    private void SkipCloseNodes()
+    private void SkipCloseNodes() //evita que el enemigo se quede enganchado intentando ir a nodos que ya tiene encima
     {
-        if (currentPath == null)
+        if (currentPath == null)//hay path?
             return;
 
-        while (currentPathIndex < currentPath.Count)
+        while (currentPathIndex < currentPath.Count) //mientras haya nodos por recorrer  
         {
-            Node node = currentPath[currentPathIndex];
+            Node node = currentPath[currentPathIndex]; //agarra el nodo actual
 
-            if (node == null)
+            if (node == null)  //si es nulo lo saltea
             {
                 currentPathIndex++;
                 continue;
@@ -291,29 +291,29 @@ public class EnemyControllerFSM : MonoBehaviour
             Vector3 nodePosition = node.transform.position;
             nodePosition.y = transform.position.y;
 
-            float distance = Vector3.Distance(
+            float distance = Vector3.Distance( //calcula distancia entre el enemigo y el nodo
                 transform.position,
                 nodePosition
             );
 
-            if (distance > 0.45f)
+            if (distance > 0.45f) //el nodo todavia esta lejos y vale la pena ir hacia el
                 break;
 
-            currentPathIndex++;
+            currentPathIndex++; //si el nodo ya esta muy cerca, lo saltea y pasa al siguiente
         }
     }
 
-    private void GoToNextWaypoint()
+    private void GoToNextWaypoint() //cambia el waypoint actual
     {
-        currentWaypointIndex++;
+        currentWaypointIndex++; //aumenta el indice en el array de waypoints para pasar al siguiente
 
-        if (currentWaypointIndex >= wayPoints.Length)
+        if (currentWaypointIndex >= wayPoints.Length) //si llego al ultimo waypoint , vuelve al primero para hacer un ciclo
         {
             currentWaypointIndex = 0;
         }
 
-        currentPath.Clear();
-        currentPathIndex = 0;
+        currentPath.Clear(); //limpia el camino actual para que se calcule uno nuevo hacia el nuevo waypoint
+        currentPathIndex = 0; //reinicia el indice del camino para empezar a moverse desde el primer nodo del nuevo camino
     }
 
     // =========================================================

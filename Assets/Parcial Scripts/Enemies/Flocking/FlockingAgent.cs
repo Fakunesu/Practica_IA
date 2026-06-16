@@ -7,10 +7,11 @@ public class FlockingAgent : MonoBehaviour
 
     private bool rescued = false;
 
-    public void Initialize(FlockingManager newManager)
+    public void Initialize(FlockingManager newManager) //los agentes quedan conectados al sistema del manager general 
     {
         manager = newManager;
 
+        // Generar una dirección aleatoria inicial para cada agente
         Vector3 randomDirection = new Vector3(
             Random.Range(-1f, 1f),
             0f,
@@ -22,7 +23,7 @@ public class FlockingAgent : MonoBehaviour
             randomDirection = transform.forward;
         }
 
-        velocity = randomDirection * manager.Speed;
+        velocity = randomDirection * manager.Speed; //setea velocidad inicial del agente
         transform.forward = randomDirection;
     }
 
@@ -30,6 +31,8 @@ public class FlockingAgent : MonoBehaviour
     {
         if (manager == null)
             return;
+        //calcula todas las fuerzas del flocking
+        //cada una representa un comportamiento diferente: separación, cohesión, alineación, dirección hacia el objetivo y evitación de obstáculos
 
         Vector3 separation = CalculateSeparation();
         Vector3 cohesion = CalculateCohesion();
@@ -37,6 +40,8 @@ public class FlockingAgent : MonoBehaviour
         Vector3 targetDirection = CalculateTargetDirection();
         Vector3 obstacleAvoidance = CalculateObstacleAvoidance();
 
+
+        //combina todas las fuerzas con sus respectivos pesos para obtener la dirección final de movimiento del agente
         Vector3 finalDirection =
             separation * manager.SeparationWeight +
             cohesion * manager.CohesionWeight +
@@ -63,7 +68,7 @@ public class FlockingAgent : MonoBehaviour
         }
     }
 
-    private Vector3 CalculateTargetDirection()
+    private Vector3 CalculateTargetDirection()//calcula la dirección hacia el objetivo actual establecido por el manager
     {
         Vector3 direction =
             manager.CurrentTargetPosition - transform.position;
@@ -76,7 +81,7 @@ public class FlockingAgent : MonoBehaviour
         return direction.normalized;
     }
 
-    private Vector3 CalculateSeparation()
+    private Vector3 CalculateSeparation()//evita que los agentes se encimen
     {
         Vector3 direction = Vector3.zero;
 
@@ -107,7 +112,7 @@ public class FlockingAgent : MonoBehaviour
         return direction;
     }
 
-    private Vector3 CalculateCohesion()
+    private Vector3 CalculateCohesion()//intenta mantener unido al grupo calculando un centro promedio entre todos
     {
         Vector3 center = Vector3.zero;
         int count = 0;
@@ -140,7 +145,7 @@ public class FlockingAgent : MonoBehaviour
         return directionToCenter.normalized;
     }
 
-    private Vector3 CalculateAlignment()
+    private Vector3 CalculateAlignment()//hace que el agente tienda a moverse en la misma direccion que sus vecinos promediando la direccion de todos
     {
         Vector3 averageForward = Vector3.zero;
         int count = 0;
@@ -171,7 +176,7 @@ public class FlockingAgent : MonoBehaviour
         return averageForward.normalized;
     }
 
-    private Vector3 CalculateObstacleAvoidance()
+    private Vector3 CalculateObstacleAvoidance() //permite que los agentes detecten obstaculos
     {
         Vector3 forwardDirection = velocity.normalized;
 
@@ -259,7 +264,7 @@ public class FlockingAgent : MonoBehaviour
 
     
 
-    public void Rescue()
+    public void Rescue()//metodo para rescatar al agente, eliminandolo del sistema del manager y destruyendo su gameobject
     {
         if (rescued)
             return;
@@ -294,315 +299,3 @@ public class FlockingAgent : MonoBehaviour
         );
     }
 }
-
-/*public class FlockingAgent : MonoBehaviour
-{
-    private FlockingManager manager;
-    private Vector3 velocity;
-
-
-    public void Initialize(FlockingManager newManager)
-    {
-        manager = newManager;
-
-        Vector3 randomDirection = new Vector3(
-            Random.Range(-1f, 1f),
-            0f,
-            Random.Range(-1f, 1f)
-        ).normalized;
-
-        if (randomDirection == Vector3.zero)
-        {
-            randomDirection = transform.forward;
-        }
-
-        velocity = randomDirection * manager.Speed;
-        transform.forward = randomDirection;
-    }
-
-    private void Update()
-    {
-        if (manager == null)
-            return;
-
-        Vector3 separation = CalculateSeparation();
-        Vector3 cohesion = CalculateCohesion();
-        Vector3 alignment = CalculateAlignment();
-        Vector3 obstacleAvoidance = CalculateObstacleAvoidance();
-
-        Vector3 targetForce =
-     CalculateTargetForce();
-
-        Vector3 boundsForce =
-            CalculateBoundsForce();
-
-        Vector3 steering =
-    separation * manager.SeparationWeight +
-    cohesion * manager.CohesionWeight +
-    alignment * manager.AlignmentWeight +
-    obstacleAvoidance * manager.ObstacleAvoidanceWeight +
-    targetForce * manager.TargetWeight +
-    boundsForce * manager.BoundsWeight;
-
-        steering = Vector3.ClampMagnitude(steering, manager.MaxForce);
-
-        velocity += steering * Time.deltaTime;
-
-        velocity = Vector3.ClampMagnitude(velocity, manager.Speed);
-
-        MoveSafely();
-
-        if (velocity.sqrMagnitude > 0.001f)
-        {
-            transform.forward = velocity.normalized;
-        }
-    }
-
-    private void MoveSafely()
-    {
-        Vector3 moveDirection = velocity.normalized;
-
-        if (moveDirection.sqrMagnitude <= 0.001f)
-            return;
-
-        float moveDistance = velocity.magnitude * Time.deltaTime;
-
-        bool willHitObstacle = Physics.SphereCast(
-            transform.position,
-            manager.AgentRadius,
-            moveDirection,
-            out RaycastHit hit,
-            moveDistance + 0.05f,
-            manager.ObstacleMask,
-            QueryTriggerInteraction.Ignore
-        );
-
-        if (willHitObstacle)
-        {
-            Vector3 slideDirection = Vector3.ProjectOnPlane(
-                moveDirection,
-                hit.normal
-            );
-
-            slideDirection.y = 0f;
-
-            if (slideDirection.sqrMagnitude > 0.001f)
-            {
-                velocity = slideDirection.normalized * manager.Speed;
-
-                transform.position +=
-                    slideDirection.normalized *
-                    moveDistance *
-                    0.5f;
-            }
-            else
-            {
-                velocity = Vector3.zero;
-            }
-
-            return;
-        }
-
-        transform.position += velocity * Time.deltaTime;
-    }
-
-    private Vector3 CalculateSeparation()
-    {
-        Vector3 direction = Vector3.zero;
-
-        foreach (FlockingAgent agent in manager.Agents)
-        {
-            if (agent == this)
-                continue;
-
-            float distance = Vector3.Distance(
-                transform.position,
-                agent.transform.position
-            );
-
-            if (distance < manager.SeparationRadius)
-            {
-                Vector3 awayDirection =
-                    transform.position - agent.transform.position;
-
-                awayDirection.y = 0f;
-
-                if (distance > 0.001f)
-                {
-                    direction += awayDirection.normalized / distance;
-                }
-            }
-        }
-
-        return direction;
-    }
-
-    private Vector3 CalculateCohesion()
-    {
-        Vector3 center = Vector3.zero;
-        int count = 0;
-
-        foreach (FlockingAgent agent in manager.Agents)
-        {
-            if (agent == this)
-                continue;
-
-            float distance = Vector3.Distance(
-                transform.position,
-                agent.transform.position
-            );
-
-            if (distance < manager.NeighborRadius)
-            {
-                center += agent.transform.position;
-                count++;
-            }
-        }
-
-        if (count == 0)
-            return Vector3.zero;
-
-        center /= count;
-
-        Vector3 directionToCenter = center - transform.position;
-        directionToCenter.y = 0f;
-
-        return directionToCenter.normalized;
-    }
-
-    private Vector3 CalculateAlignment()
-    {
-        Vector3 averageForward = Vector3.zero;
-        int count = 0;
-
-        foreach (FlockingAgent agent in manager.Agents)
-        {
-            if (agent == this)
-                continue;
-
-            float distance = Vector3.Distance(
-                transform.position,
-                agent.transform.position
-            );
-
-            if (distance < manager.NeighborRadius)
-            {
-                averageForward += agent.transform.forward;
-                count++;
-            }
-        }
-
-        if (count == 0)
-            return Vector3.zero;
-
-        averageForward /= count;
-        averageForward.y = 0f;
-
-        return averageForward.normalized;
-    }
-
-    private Vector3 CalculateObstacleAvoidance()
-    {
-        Vector3 forwardDirection = velocity.normalized;
-
-        if (forwardDirection.sqrMagnitude <= 0.001f)
-        {
-            forwardDirection = transform.forward;
-        }
-
-        bool detectedObstacle = Physics.SphereCast(
-            transform.position,
-            manager.AgentRadius,
-            forwardDirection,
-            out RaycastHit hit,
-            manager.ObstacleDetectionDistance,
-            manager.ObstacleMask,
-            QueryTriggerInteraction.Ignore
-        );
-
-        if (!detectedObstacle)
-            return Vector3.zero;
-
-        Vector3 avoidDirection = Vector3.ProjectOnPlane(
-            forwardDirection,
-            hit.normal
-        );
-
-        avoidDirection.y = 0f;
-
-        if (avoidDirection.sqrMagnitude <= 0.001f)
-        {
-            avoidDirection = Vector3.Cross(Vector3.up, hit.normal);
-            avoidDirection.y = 0f;
-        }
-
-        return avoidDirection.normalized;
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (!other.CompareTag("Player"))
-            return;
-
-        manager.RemoveAgent(this);
-        Destroy(gameObject);
-    }
-    private Vector3 CalculateTargetForce()
-    {
-        if (manager.GlobalTarget == null)
-            return Vector3.zero;
-
-        Vector3 dir =
-            manager.GlobalTarget.position -
-            transform.position;
-
-        dir.y = 0f;
-
-        if (dir == Vector3.zero)
-            return Vector3.zero;
-
-        return dir.normalized;
-    }
-    private Vector3 CalculateBoundsForce()
-    {
-        Vector3 center = manager.BoundsCenter;
-        Vector3 extents = manager.BoundsExtents;
-
-        Vector3 offset =
-            transform.position - center;
-
-        bool outsideX =
-            Mathf.Abs(offset.x) > extents.x;
-
-        bool outsideZ =
-            Mathf.Abs(offset.z) > extents.z;
-
-        if (!outsideX && !outsideZ)
-            return Vector3.zero;
-
-        Vector3 dir =
-            center - transform.position;
-
-        dir.y = 0;
-
-        return dir.normalized;
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        if (manager == null)
-            return;
-
-        Gizmos.color = Color.red;
-
-        Gizmos.DrawWireSphere(
-            transform.position,
-            manager.AgentRadius
-        );
-
-        Gizmos.DrawRay(
-            transform.position,
-            transform.forward * manager.ObstacleDetectionDistance
-        );
-    }
-}*/

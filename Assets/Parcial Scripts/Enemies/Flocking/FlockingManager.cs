@@ -22,28 +22,28 @@ public class FlockingManager : MonoBehaviour
     [SerializeField] private float turnSpeed = 4f;
 
     [Header("Flocking Radius")]
-    [SerializeField] private float neighborRadius = 5f;
-    [SerializeField] private float separationRadius = 0.5f;
+    [SerializeField] private float neighborRadius = 5f; //radio para detectar vecinos cercanos
+    [SerializeField] private float separationRadius = 0.5f;//radio para detectar vecinos demasiado cerca y evitar colisiones
 
     [Header("Weights")]
-    [SerializeField] private float separationWeight = 0.6f;
-    [SerializeField] private float cohesionWeight = 3f;
-    [SerializeField] private float alignmentWeight = 1f;
-    [SerializeField] private float targetWeight = 2.5f;
+    [SerializeField] private float separationWeight = 0.6f;//cuanto se alejan entre si
+    [SerializeField] private float cohesionWeight = 3f;//cuanto intentan mantenerse juntos, dispersasion
+    [SerializeField] private float alignmentWeight = 1f;//cuanto intentan alinearse con la dirección del grupo
+    [SerializeField] private float targetWeight = 2.5f;//cuanto priorizan ir al target (jugador)
 
     [Header("Follow Player")]
-    [SerializeField] private float playerDetectDistance = 5f;
-    [SerializeField] private float playerAbandonDistance = 8f;
+    [SerializeField] private float playerDetectDistance = 5f;//distancia a la que el grupo detecta al jugador y comienza a seguirlo
+    [SerializeField] private float playerAbandonDistance = 8f;//distancia a la que el grupo abandona al jugador y vuelve a deambular
 
     [Header("Wander Waypoints")]
-    [SerializeField] private Transform[] wanderWaypoints;
-    [SerializeField] private float waypointReachDistance = 2f;
+    [SerializeField] private Transform[] wanderWaypoints;//puntos de interés para que el grupo deambule cuando no sigue al jugador
+    [SerializeField] private float waypointReachDistance = 2f;//distancia a la que el grupo considera que ha llegado a un waypoint y pasa al siguiente
 
     [Header("Obstacle Avoidance")]
-    [SerializeField] private LayerMask obstacleMask;
-    [SerializeField] private float obstacleDetectionDistance = 2.5f;
-    [SerializeField] private float obstacleAvoidanceWeight = 5f;
-    [SerializeField] private float agentRadius = 0.3f;
+    [SerializeField] private LayerMask obstacleMask;//capa que representa los obstáculos en el entorno
+    [SerializeField] private float obstacleDetectionDistance = 2.5f;//distancia a la que los agentes detectan obstáculos y comienzan a evitarlos
+    [SerializeField] private float obstacleAvoidanceWeight = 5f;//cuanto priorizan evitar obstáculos en su movimiento
+    [SerializeField] private float agentRadius = 0.3f;//radio que representa el tamaño del agente para evitar colisiones con obstáculos y otros agentes
 
     private int currentWaypointIndex;
     private FlockMode currentMode = FlockMode.Wander;
@@ -70,7 +70,7 @@ public class FlockingManager : MonoBehaviour
 
     public FlockMode CurrentMode => currentMode;
 
-    public Vector3 CurrentTargetPosition
+    public Vector3 CurrentTargetPosition //posición objetivo actual, ya sea el jugador o el waypoint de deambular
     {
         get
         {
@@ -83,7 +83,7 @@ public class FlockingManager : MonoBehaviour
         }
     }
 
-    private Vector3 CurrentWanderWaypointPosition
+    private Vector3 CurrentWanderWaypointPosition //posición del waypoint de deambular actual, si no hay waypoints válidos devuelve la posición del manager como fallback
     {
         get
         {
@@ -129,7 +129,7 @@ public class FlockingManager : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < amount; i++)
+        for (int i = 0; i < amount; i++) //genera la cantidad de agentes especificada en posiciones aleatorias dentro del radio de spawn
         {
             Vector3 randomPosition =
                 transform.position +
@@ -157,7 +157,7 @@ public class FlockingManager : MonoBehaviour
         }
     }
 
-    private void UpdateMode()
+    private void UpdateMode() //verifica la distancia al jugador y cambia el modo de comportamiento del grupo entre deambular y seguir al jugador
     {
         if (player == null || agents.Count == 0)
             return;
@@ -169,7 +169,7 @@ public class FlockingManager : MonoBehaviour
             player.position
         );
 
-        if (currentMode == FlockMode.Wander)
+        if (currentMode == FlockMode.Wander) //si el grupo está deambulando y el jugador se acerca lo suficiente, cambia a modo seguir al jugador
         {
             if (distanceToPlayer <= playerDetectDistance)
             {
@@ -177,7 +177,7 @@ public class FlockingManager : MonoBehaviour
                 Debug.Log("Flock: siguiendo al jugador.");
             }
         }
-        else if (currentMode == FlockMode.FollowPlayer)
+        else if (currentMode == FlockMode.FollowPlayer) //si el grupo está siguiendo al jugador y este se aleja lo suficiente, cambia a modo deambular
         {
             if (distanceToPlayer >= playerAbandonDistance)
             {
@@ -187,7 +187,7 @@ public class FlockingManager : MonoBehaviour
         }
     }
 
-    private void UpdateWanderWaypoint()
+    private void UpdateWanderWaypoint() //si el grupo está deambulando, verifica la distancia al waypoint actual y si lo ha alcanzado, pasa al siguiente waypoint
     {
         if (currentMode != FlockMode.Wander)
             return;
@@ -208,7 +208,7 @@ public class FlockingManager : MonoBehaviour
         }
     }
 
-    private void GoToNextWaypoint()
+    private void GoToNextWaypoint() //incrementa el índice del waypoint actual para que el grupo se dirija al siguiente waypoint, si se alcanza el final de la lista vuelve al primer waypoint
     {
         currentWaypointIndex++;
 
@@ -218,7 +218,7 @@ public class FlockingManager : MonoBehaviour
         }
     }
 
-    private Vector3 GetGroupCenter()
+    private Vector3 GetGroupCenter() //calcula la posición central del grupo promediando las posiciones de todos los agentes
     {
         if (agents == null || agents.Count == 0)
             return transform.position;
@@ -226,7 +226,7 @@ public class FlockingManager : MonoBehaviour
         Vector3 center = Vector3.zero;
         int count = 0;
 
-        foreach (FlockingAgent agent in agents)
+        foreach (FlockingAgent agent in agents) //suma la posicion de todos los agentes para luego dividir por la cantidad y obtener el centro del grupo
         {
             if (agent == null)
                 continue;
@@ -238,10 +238,10 @@ public class FlockingManager : MonoBehaviour
         if (count == 0)
             return transform.position;
 
-        return center / count;
+        return center / count; //devuelve la posición central del grupo
     }
 
-    public void RemoveAgent(FlockingAgent agent)
+    public void RemoveAgent(FlockingAgent agent) //elimina un agente de la lista de agentes del manager, se llama cuando un agente es rescatado o destruido
     {
         if (agents.Contains(agent))
         {
@@ -288,112 +288,4 @@ public class FlockingManager : MonoBehaviour
     }
 }
 
-/*public class FlockingManager : MonoBehaviour
-{
-    [Header("Agent")]
-    [SerializeField] private FlockingAgent agentPrefab;
-    [SerializeField] private int amount = 10;
-    [SerializeField] private float spawnRadius = 5f;
 
-    [Header("Movement")]
-    [SerializeField] private float speed = 1.5f;
-    [SerializeField] private float turnSpeed = 4f;
-
-    [Header("Flocking Radius")]
-    [SerializeField] private float neighborRadius = 5f;
-    [SerializeField] private float separationRadius = 0.5f;
-
-    [Header("Weights")]
-    [SerializeField] private float separationWeight = 0.6f;
-    [SerializeField] private float cohesionWeight = 3f;
-    [SerializeField] private float alignmentWeight = 1f;
-
-    [Header("Obstacle Avoidance")]
-    [SerializeField] private LayerMask obstacleMask;
-    [SerializeField] private float obstacleDetectionDistance = 2f;
-    [SerializeField] private float obstacleAvoidanceWeight = 3f;
-    [SerializeField] private float agentRadius = 0.3f;
-    [SerializeField] private Transform globalTarget;
-    [SerializeField]
-    private Vector3 boundsExtents = new Vector3(20, 1, 20);
-    [SerializeField] private float maxForce = 5f;
-    public float MaxForce => maxForce;
-    public Vector3 BoundsCenter => transform.position;
-    public Vector3 BoundsExtents => boundsExtents;
-
-    [SerializeField]
-    private float boundsWeight = 2f;
-
-    public float BoundsWeight => boundsWeight;
-    public Transform GlobalTarget => globalTarget;
-
-    [SerializeField] private float targetWeight = 0.6f;
-    public float TargetWeight => targetWeight;
-    public LayerMask ObstacleMask => obstacleMask;
-    public float ObstacleDetectionDistance => obstacleDetectionDistance;
-    public float ObstacleAvoidanceWeight => obstacleAvoidanceWeight;
-    public float AgentRadius => agentRadius;
-
-    private List<FlockingAgent> agents = new List<FlockingAgent>();
-
-    public List<FlockingAgent> Agents => agents;
-
-    public float Speed => speed;
-    public float TurnSpeed => turnSpeed;
-
-    public float NeighborRadius => neighborRadius;
-    public float SeparationRadius => separationRadius;
-
-    public float SeparationWeight => separationWeight;
-    public float CohesionWeight => cohesionWeight;
-    public float AlignmentWeight => alignmentWeight;
-
-    private void Start()
-    {
-        SpawnAgents();
-    }
-
-    private void SpawnAgents()
-    {
-        if (agentPrefab == null)
-        {
-            Debug.LogWarning("FlockingManager: falta asignar el prefab del agente.");
-            return;
-        }
-
-        for (int i = 0; i < amount; i++)
-        {
-            Vector3 randomPosition =
-                transform.position +
-                new Vector3(
-                    Random.Range(-spawnRadius, spawnRadius),
-                    0f,
-                    Random.Range(-spawnRadius, spawnRadius)
-                );
-
-            Quaternion randomRotation =
-                Quaternion.Euler(
-                    0f,
-                    Random.Range(0f, 360f),
-                    0f
-                );
-
-            FlockingAgent newAgent = Instantiate(
-                agentPrefab,
-                randomPosition,
-                randomRotation
-            );
-
-            newAgent.Initialize(this);
-            agents.Add(newAgent);
-        }
-    }
-
-    public void RemoveAgent(FlockingAgent agent)
-    {
-        if (agents.Contains(agent))
-        {
-            agents.Remove(agent);
-        }
-    }
-}*/
