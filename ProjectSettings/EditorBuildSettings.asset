@@ -14,7 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/PathFinding.unity
     guid: 61e57f7a1be549742854121c2af526bd
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Parcial_1.unity
     guid: 1eeaaeb919265a4448f010e2f7a61e88
   - enabled: 1
