@@ -9,7 +9,7 @@ public class PursuitState : State
 
     public override void Enter()
     {
-        
+        fsm.enemy.SetColor(Color.red);
     }
 
     public override void Update(bool canSeePlayer)
@@ -20,7 +20,7 @@ public class PursuitState : State
 
         if (!canSeePlayer)
         {
-            fsm.ToPatrol();
+            fsm.ToReturnToPatrol();
         }
         else if (distance < 2f)
         {
@@ -30,5 +30,9 @@ public class PursuitState : State
         {
             fsm.ToFreeze();
         }
+    }
+    public override void Exit()
+    {
+        fsm.enemy.SetColor(Color.white);
     }
 }

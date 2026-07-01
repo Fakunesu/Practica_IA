@@ -4,14 +4,12 @@ public class FlockingAgent : MonoBehaviour
 {
     private FlockingManager manager;
     private Vector3 velocity;
+    private bool rescued;
 
-    private bool rescued = false;
-
-    public void Initialize(FlockingManager newManager) //los agentes quedan conectados al sistema del manager general 
+    public void Initialize(FlockingManager newManager)
     {
         manager = newManager;
 
-        // Generar una dirección aleatoria inicial para cada agente
         Vector3 randomDirection = new Vector3(
             Random.Range(-1f, 1f),
             0f,
@@ -23,7 +21,7 @@ public class FlockingAgent : MonoBehaviour
             randomDirection = transform.forward;
         }
 
-        velocity = randomDirection * manager.Speed; //setea velocidad inicial del agente
+        velocity = randomDirection * manager.Speed;
         transform.forward = randomDirection;
     }
 
@@ -31,32 +29,51 @@ public class FlockingAgent : MonoBehaviour
     {
         if (manager == null)
             return;
-        //calcula todas las fuerzas del flocking
-        //cada una representa un comportamiento diferente: separación, cohesión, alineación, dirección hacia el objetivo y evitación de obstáculos
 
         Vector3 separation = CalculateSeparation();
         Vector3 cohesion = CalculateCohesion();
         Vector3 alignment = CalculateAlignment();
         Vector3 targetDirection = CalculateTargetDirection();
         Vector3 obstacleAvoidance = CalculateObstacleAvoidance();
+        Vector3 enemyFlee = CalculateEnemyFlee();
 
+        Vector3 finalDirection;
+        float currentSpeed;
 
-        //combina todas las fuerzas con sus respectivos pesos para obtener la dirección final de movimiento del agente
-        Vector3 finalDirection =
-            separation * manager.SeparationWeight +
-            cohesion * manager.CohesionWeight +
-            alignment * manager.AlignmentWeight +
-            targetDirection * manager.TargetWeight +
-            obstacleAvoidance * manager.ObstacleAvoidanceWeight;
+        if (enemyFlee != Vector3.zero)
+        {
+            // Cuando hay enemigo cerca, escapar domina al resto.
+            finalDirection =
+                enemyFlee * 8f +
+                separation * manager.SeparationWeight +
+                obstacleAvoidance * manager.ObstacleAvoidanceWeight;
+
+            currentSpeed = manager.Speed * manager.FleeSpeedMultiplier;
+        }
+        else
+        {
+            finalDirection =
+                separation * manager.SeparationWeight +
+                cohesion * manager.CohesionWeight +
+                alignment * manager.AlignmentWeight +
+                targetDirection * manager.TargetWeight +
+                obstacleAvoidance * manager.ObstacleAvoidanceWeight;
+
+            currentSpeed = manager.Speed;
+        }
 
         finalDirection.y = 0f;
 
         if (finalDirection.sqrMagnitude > 0.001f)
         {
+            float currentTurnSpeed = enemyFlee != Vector3.zero
+                ? manager.TurnSpeed * 2f
+                : manager.TurnSpeed;
+
             velocity = Vector3.Lerp(
                 velocity,
-                finalDirection.normalized * manager.Speed,
-                Time.deltaTime * manager.TurnSpeed
+                finalDirection.normalized * currentSpeed,
+                Time.deltaTime * currentTurnSpeed
             );
         }
 
@@ -68,7 +85,31 @@ public class FlockingAgent : MonoBehaviour
         }
     }
 
-    private Vector3 CalculateTargetDirection()//calcula la dirección hacia el objetivo actual establecido por el manager
+    private Vector3 CalculateEnemyFlee()
+    {
+        if (manager.CurrentEnemyThreat == null)
+            return Vector3.zero;
+
+        Vector3 directionAway =
+            transform.position - manager.CurrentEnemyThreat.position;
+
+        directionAway.y = 0f;
+
+        float distance = directionAway.magnitude;
+
+        if (distance > manager.EnemyDetectDistance)
+            return Vector3.zero;
+
+        if (distance <= 0.001f)
+        {
+            directionAway = Random.insideUnitSphere;
+            directionAway.y = 0f;
+        }
+
+        return directionAway.normalized;
+    }
+
+    private Vector3 CalculateTargetDirection()
     {
         Vector3 direction =
             manager.CurrentTargetPosition - transform.position;
@@ -81,7 +122,7 @@ public class FlockingAgent : MonoBehaviour
         return direction.normalized;
     }
 
-    private Vector3 CalculateSeparation()//evita que los agentes se encimen
+    private Vector3 CalculateSeparation()
     {
         Vector3 direction = Vector3.zero;
 
@@ -112,7 +153,7 @@ public class FlockingAgent : MonoBehaviour
         return direction;
     }
 
-    private Vector3 CalculateCohesion()//intenta mantener unido al grupo calculando un centro promedio entre todos
+    private Vector3 CalculateCohesion()
     {
         Vector3 center = Vector3.zero;
         int count = 0;
@@ -145,7 +186,7 @@ public class FlockingAgent : MonoBehaviour
         return directionToCenter.normalized;
     }
 
-    private Vector3 CalculateAlignment()//hace que el agente tienda a moverse en la misma direccion que sus vecinos promediando la direccion de todos
+    private Vector3 CalculateAlignment()
     {
         Vector3 averageForward = Vector3.zero;
         int count = 0;
@@ -176,7 +217,7 @@ public class FlockingAgent : MonoBehaviour
         return averageForward.normalized;
     }
 
-    private Vector3 CalculateObstacleAvoidance() //permite que los agentes detecten obstaculos
+    private Vector3 CalculateObstacleAvoidance()
     {
         Vector3 forwardDirection = velocity.normalized;
 
@@ -198,18 +239,24 @@ public class FlockingAgent : MonoBehaviour
         if (!detectedObstacle)
             return Vector3.zero;
 
-        Vector3 avoidDirection = Vector3.ProjectOnPlane(
-            forwardDirection,
-            hit.normal
-        );
-
+        // hit.normal apunta hacia afuera de la superficie:
+        // sirve como dirección para alejarse de la pared.
+        Vector3 avoidDirection = hit.normal;
         avoidDirection.y = 0f;
 
+        // Si pega muy de frente o la normal no sirve en X/Z,
+        // elegimos un costado para rodear el obstáculo.
         if (avoidDirection.sqrMagnitude <= 0.001f)
         {
-            avoidDirection = Vector3.Cross(Vector3.up, hit.normal);
+            avoidDirection = Vector3.Cross(Vector3.up, forwardDirection);
             avoidDirection.y = 0f;
         }
+
+        Debug.DrawRay(
+        transform.position,
+        forwardDirection * manager.ObstacleDetectionDistance,
+        Color.red
+);
 
         return avoidDirection.normalized;
     }
@@ -242,9 +289,15 @@ public class FlockingAgent : MonoBehaviour
 
             slideDirection.y = 0f;
 
+            if (slideDirection.sqrMagnitude <= 0.001f)
+            {
+                slideDirection = Vector3.Cross(Vector3.up, hit.normal);
+                slideDirection.y = 0f;
+            }
+
             if (slideDirection.sqrMagnitude > 0.001f)
             {
-                velocity = slideDirection.normalized * manager.Speed;
+                velocity = slideDirection.normalized * velocity.magnitude;
 
                 transform.position +=
                     slideDirection.normalized *
@@ -262,9 +315,7 @@ public class FlockingAgent : MonoBehaviour
         transform.position += velocity * Time.deltaTime;
     }
 
-    
-
-    public void Rescue()//metodo para rescatar al agente, eliminandolo del sistema del manager y destruyendo su gameobject
+    public void Rescue()
     {
         if (rescued)
             return;
@@ -276,26 +327,6 @@ public class FlockingAgent : MonoBehaviour
             manager.RemoveAgent(this);
         }
 
-        Debug.Log("Bichito rescatado: " + gameObject.name );
-
         Destroy(gameObject);
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        if (manager == null)
-            return;
-
-        Gizmos.color = Color.red;
-
-        Gizmos.DrawWireSphere(
-            transform.position,
-            manager.AgentRadius
-        );
-
-        Gizmos.DrawRay(
-            transform.position,
-            transform.forward * manager.ObstacleDetectionDistance
-        );
     }
 }

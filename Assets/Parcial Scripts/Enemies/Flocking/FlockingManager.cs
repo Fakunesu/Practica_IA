@@ -22,32 +22,37 @@ public class FlockingManager : MonoBehaviour
     [SerializeField] private float turnSpeed = 4f;
 
     [Header("Flocking Radius")]
-    [SerializeField] private float neighborRadius = 5f; //radio para detectar vecinos cercanos
-    [SerializeField] private float separationRadius = 0.5f;//radio para detectar vecinos demasiado cerca y evitar colisiones
+    [SerializeField] private float neighborRadius = 5f;
+    [SerializeField] private float separationRadius = 0.5f;
 
     [Header("Weights")]
-    [SerializeField] private float separationWeight = 0.6f;//cuanto se alejan entre si
-    [SerializeField] private float cohesionWeight = 3f;//cuanto intentan mantenerse juntos, dispersasion
-    [SerializeField] private float alignmentWeight = 1f;//cuanto intentan alinearse con la dirección del grupo
-    [SerializeField] private float targetWeight = 2.5f;//cuanto priorizan ir al target (jugador)
+    [SerializeField] private float separationWeight = 0.6f;
+    [SerializeField] private float cohesionWeight = 3f;
+    [SerializeField] private float alignmentWeight = 1f;
+    [SerializeField] private float targetWeight = 2.5f;
 
     [Header("Follow Player")]
-    [SerializeField] private float playerDetectDistance = 5f;//distancia a la que el grupo detecta al jugador y comienza a seguirlo
-    [SerializeField] private float playerAbandonDistance = 8f;//distancia a la que el grupo abandona al jugador y vuelve a deambular
+    [SerializeField] private float playerDetectDistance = 5f;
+    [SerializeField] private float playerAbandonDistance = 8f;
 
     [Header("Wander Waypoints")]
-    [SerializeField] private Transform[] wanderWaypoints;//puntos de interés para que el grupo deambule cuando no sigue al jugador
-    [SerializeField] private float waypointReachDistance = 2f;//distancia a la que el grupo considera que ha llegado a un waypoint y pasa al siguiente
+    [SerializeField] private Transform[] wanderWaypoints;
+    [SerializeField] private float waypointReachDistance = 2f;
 
     [Header("Obstacle Avoidance")]
-    [SerializeField] private LayerMask obstacleMask;//capa que representa los obstáculos en el entorno
-    [SerializeField] private float obstacleDetectionDistance = 2.5f;//distancia a la que los agentes detectan obstáculos y comienzan a evitarlos
-    [SerializeField] private float obstacleAvoidanceWeight = 5f;//cuanto priorizan evitar obstáculos en su movimiento
-    [SerializeField] private float agentRadius = 0.3f;//radio que representa el tamaño del agente para evitar colisiones con obstáculos y otros agentes
+    [SerializeField] private LayerMask obstacleMask;
+    [SerializeField] private float obstacleDetectionDistance = 2.5f;
+    [SerializeField] private float obstacleAvoidanceWeight = 5f;
+    [SerializeField] private float agentRadius = 0.3f;
+
+    [Header("Enemy Threat")]
+    [SerializeField] private float enemyDetectDistance = 8f;
+    [SerializeField] private float fleeSpeedMultiplier = 2.5f;
 
     private int currentWaypointIndex;
     private FlockMode currentMode = FlockMode.Wander;
 
+    private Transform currentEnemyThreat;
     private List<FlockingAgent> agents = new List<FlockingAgent>();
 
     public List<FlockingAgent> Agents => agents;
@@ -70,7 +75,11 @@ public class FlockingManager : MonoBehaviour
 
     public FlockMode CurrentMode => currentMode;
 
-    public Vector3 CurrentTargetPosition //posición objetivo actual, ya sea el jugador o el waypoint de deambular
+    public Transform CurrentEnemyThreat => currentEnemyThreat;
+    public float EnemyDetectDistance => enemyDetectDistance;
+    public float FleeSpeedMultiplier => fleeSpeedMultiplier;
+
+    public Vector3 CurrentTargetPosition
     {
         get
         {
@@ -83,7 +92,7 @@ public class FlockingManager : MonoBehaviour
         }
     }
 
-    private Vector3 CurrentWanderWaypointPosition //posición del waypoint de deambular actual, si no hay waypoints válidos devuelve la posición del manager como fallback
+    private Vector3 CurrentWanderWaypointPosition
     {
         get
         {
@@ -104,7 +113,7 @@ public class FlockingManager : MonoBehaviour
     {
         if (player == null)
         {
-            GameObject playerObject = GameObject.Find("Player");
+            GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
 
             if (playerObject != null)
             {
@@ -129,7 +138,7 @@ public class FlockingManager : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < amount; i++) //genera la cantidad de agentes especificada en posiciones aleatorias dentro del radio de spawn
+        for (int i = 0; i < amount; i++)
         {
             Vector3 randomPosition =
                 transform.position +
@@ -157,7 +166,7 @@ public class FlockingManager : MonoBehaviour
         }
     }
 
-    private void UpdateMode() //verifica la distancia al jugador y cambia el modo de comportamiento del grupo entre deambular y seguir al jugador
+    private void UpdateMode()
     {
         if (player == null || agents.Count == 0)
             return;
@@ -169,25 +178,23 @@ public class FlockingManager : MonoBehaviour
             player.position
         );
 
-        if (currentMode == FlockMode.Wander) //si el grupo está deambulando y el jugador se acerca lo suficiente, cambia a modo seguir al jugador
+        if (currentMode == FlockMode.Wander)
         {
             if (distanceToPlayer <= playerDetectDistance)
             {
                 currentMode = FlockMode.FollowPlayer;
-                Debug.Log("Flock: siguiendo al jugador.");
             }
         }
-        else if (currentMode == FlockMode.FollowPlayer) //si el grupo está siguiendo al jugador y este se aleja lo suficiente, cambia a modo deambular
+        else if (currentMode == FlockMode.FollowPlayer)
         {
             if (distanceToPlayer >= playerAbandonDistance)
             {
                 currentMode = FlockMode.Wander;
-                Debug.Log("Flock: el jugador se alejó, vuelven a deambular.");
             }
         }
     }
 
-    private void UpdateWanderWaypoint() //si el grupo está deambulando, verifica la distancia al waypoint actual y si lo ha alcanzado, pasa al siguiente waypoint
+    private void UpdateWanderWaypoint()
     {
         if (currentMode != FlockMode.Wander)
             return;
@@ -208,7 +215,7 @@ public class FlockingManager : MonoBehaviour
         }
     }
 
-    private void GoToNextWaypoint() //incrementa el índice del waypoint actual para que el grupo se dirija al siguiente waypoint, si se alcanza el final de la lista vuelve al primer waypoint
+    private void GoToNextWaypoint()
     {
         currentWaypointIndex++;
 
@@ -218,7 +225,7 @@ public class FlockingManager : MonoBehaviour
         }
     }
 
-    private Vector3 GetGroupCenter() //calcula la posición central del grupo promediando las posiciones de todos los agentes
+    private Vector3 GetGroupCenter()
     {
         if (agents == null || agents.Count == 0)
             return transform.position;
@@ -226,7 +233,7 @@ public class FlockingManager : MonoBehaviour
         Vector3 center = Vector3.zero;
         int count = 0;
 
-        foreach (FlockingAgent agent in agents) //suma la posicion de todos los agentes para luego dividir por la cantidad y obtener el centro del grupo
+        foreach (FlockingAgent agent in agents)
         {
             if (agent == null)
                 continue;
@@ -238,10 +245,23 @@ public class FlockingManager : MonoBehaviour
         if (count == 0)
             return transform.position;
 
-        return center / count; //devuelve la posición central del grupo
+        return center / count;
     }
 
-    public void RemoveAgent(FlockingAgent agent) //elimina un agente de la lista de agentes del manager, se llama cuando un agente es rescatado o destruido
+    public void SetEnemyThreat(Transform enemy)
+    {
+        currentEnemyThreat = enemy;
+    }
+
+    public void ClearEnemyThreat(Transform enemy)
+    {
+        if (currentEnemyThreat == enemy)
+        {
+            currentEnemyThreat = null;
+        }
+    }
+
+    public void RemoveAgent(FlockingAgent agent)
     {
         if (agents.Contains(agent))
         {
@@ -249,43 +269,44 @@ public class FlockingManager : MonoBehaviour
         }
     }
 
+
     private void OnDrawGizmosSelected()
     {
+        // Centro del grupo que se usa para detectar al player.
+        Vector3 groupCenter = Application.isPlaying
+            ? GetGroupCenter()
+            : transform.position;
+
+        // Radio donde empiezan a seguir al player.
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(transform.position, playerDetectDistance);
+        Gizmos.DrawWireSphere(groupCenter, playerDetectDistance);
 
+        // Radio donde abandonan al player y vuelven a Wander.
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, playerAbandonDistance);
+        Gizmos.DrawWireSphere(groupCenter, playerAbandonDistance);
 
-        if (wanderWaypoints == null)
-            return;
-
-        Gizmos.color = Color.yellow;
-
-        for (int i = 0; i < wanderWaypoints.Length; i++)
+        // Si hay una amenaza, muestra el radio de escape desde el enemigo.
+        if (currentEnemyThreat != null)
         {
-            if (wanderWaypoints[i] == null)
-                continue;
-
+            Gizmos.color = Color.magenta;
             Gizmos.DrawWireSphere(
-                wanderWaypoints[i].position,
-                waypointReachDistance
+                currentEnemyThreat.position,
+                enemyDetectDistance
             );
+        }
 
-            int nextIndex = i + 1;
+        // Líneas visuales desde el centro del flock hacia cada agente.
+        if (Application.isPlaying && agents != null)
+        {
+            Gizmos.color = Color.cyan;
 
-            if (nextIndex >= wanderWaypoints.Length)
-                nextIndex = 0;
-
-            if (wanderWaypoints[nextIndex] != null)
+            foreach (FlockingAgent agent in agents)
             {
-                Gizmos.DrawLine(
-                    wanderWaypoints[i].position,
-                    wanderWaypoints[nextIndex].position
-                );
+                if (agent != null)
+                {
+                    Gizmos.DrawLine(groupCenter, agent.transform.position);
+                }
             }
         }
     }
 }
-
-

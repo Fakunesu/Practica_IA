@@ -1,48 +1,44 @@
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class EnemyController : MonoBehaviour
 {
-    [Header("Player")]
-    [SerializeField] private GameObject player;
-    private Rigidbody playerRB;
-
     private LineOfSight los;
     private EnemyTree desitionTree;
     private EnemyContext context;
-    private PlayerMovementController playerStats;
     private Rigidbody rb;
 
+    [Header("Flocking Target")]
+    [SerializeField] private FlockingManager flockingManager;
+    private FlockingAgent currentTarget;
+
     [Header("Enemy Stats")]
-    private float maxStamina = 15;
+    private float maxStamina = 15f;
     [SerializeField] private float stamina;
-    [SerializeField] private float speed = 5;
+    [SerializeField] private float speed = 5f;
     [SerializeField] private float chasingSpeed = 10f;
     [SerializeField] private float attackDistance = 1.5f;
 
-    [Header("SteeringBehaviour")]
+    [Header("Steering Behaviour")]
     private Vector3 dir;
-    [SerializeField] private float rotationSpeed = 33;
-    [SerializeField] private float patrolRotationSpeed = 33;
-    private Material defaultMaterial;
+    [SerializeField] private float rotationSpeed = 33f;
+    [SerializeField] private float patrolRotationSpeed = 33f;
     private Vector3 wanderDirection;
     private float wanderTime;
     [SerializeField] private float WanderchangeInterval = 1.5f;
-    [SerializeField] private float maxPredictionTime = 2f;
     [SerializeField] private float arriveRadius = 3f;
 
     [Header("Patrol")]
     [SerializeField] private List<Transform> wayPoints = new List<Transform>();
     [SerializeField] private float patrolSpeed = 10f;
     [SerializeField] private float minDistanceToWaypoint = 0.2f;
-    private int currentWaypointIndex = 0;
+    private int currentWaypointIndex;
     private bool rightPatrol;
 
     [Header("Rest")]
     [SerializeField] private float timer = 5f;
-    [SerializeField] float counter;
+    [SerializeField] private float counter;
 
     private void Awake()
     {
@@ -50,22 +46,9 @@ public class EnemyController : MonoBehaviour
         los = GetComponent<LineOfSight>();
         desitionTree = GetComponent<EnemyTree>();
 
-        if (player == null)
+        if (flockingManager == null)
         {
-            player = GameObject.FindGameObjectWithTag("Player");
-        }
-
-        if (player != null)
-        {
-            playerStats = player.GetComponent<PlayerMovementController>();
-            playerRB = player.GetComponent<Rigidbody>();
-
-            context = new EnemyContext
-            {
-                self = transform,
-                player = player.transform,
-                los = los
-            };
+            flockingManager = FindFirstObjectByType<FlockingManager>();
         }
 
         wanderDirection = transform.forward;
@@ -73,10 +56,7 @@ public class EnemyController : MonoBehaviour
 
     private void Update()
     {
-        if (context != null && player != null)
-        {
-            context.player = player.transform;
-        }
+        FindVisibleFlockingAgent();
     }
 
     private void FixedUpdate()
@@ -84,54 +64,83 @@ public class EnemyController : MonoBehaviour
         Move(dir);
     }
 
-    // Preguntas que usa el Decision Tree para decidir qué acción ejecutar.
-    public bool HasStamina()
+    private void FindVisibleFlockingAgent()
     {
-        return stamina > 0;
-    }
-
-    public bool IsSeeingPlayer()
-    {
-        if (player == null || los == null)
+        if (flockingManager == null || flockingManager.Agents.Count == 0)
         {
-            return false;
+            currentTarget = null;
+            flockingManager?.ClearEnemyThreat(transform);
+            return;
         }
 
-        return los.IsRange(transform, player.transform);
+        FlockingAgent closestAgent = null;
+        float closestDistanceSqr = Mathf.Infinity;
+
+        foreach (FlockingAgent agent in flockingManager.Agents)
+        {
+            if (agent == null)
+                continue;
+
+            if (!los.IsRange(transform, agent.transform))
+                continue;
+
+            Vector3 distance =
+                agent.transform.position - transform.position;
+
+            distance.y = 0f;
+
+            float distanceSqr = distance.sqrMagnitude;
+
+            if (distanceSqr < closestDistanceSqr)
+            {
+                closestDistanceSqr = distanceSqr;
+                closestAgent = agent;
+            }
+        }
+
+        currentTarget = closestAgent;
+
+        if (currentTarget != null)
+        {
+            flockingManager.SetEnemyThreat(transform);
+        }
+        else
+        {
+            flockingManager.ClearEnemyThreat(transform);
+        }
+    }
+
+    public bool HasStamina()
+    {
+        return stamina > 0f;
+    }
+
+    // El árbol puede seguir usando este nombre.
+    public bool IsSeeingPlayer()
+    {
+        return currentTarget != null;
     }
 
     public bool IsInDisadvantage()
     {
-        if (playerStats == null)
-        {
-            return false;
-        }
-
-        return playerStats.IsPowerUpped;
+        return false;
     }
 
     public bool IsInRange()
     {
-        if (player == null || los == null)
-        {
+        if (currentTarget == null || los == null)
             return false;
-        }
 
-        return los.IsRangeAttack(transform, player.transform);
+        return los.IsRangeAttack(transform, currentTarget.transform);
     }
 
-    // Patrulla entre waypoints, yendo y volviendo por la lista.
     public void PatrollingWaypoints()
     {
         if (wayPoints == null || wayPoints.Count == 0)
-        {
             return;
-        }
 
         if (wayPoints[currentWaypointIndex] == null)
-        {
             return;
-        }
 
         Transform currentWaypoint = wayPoints[currentWaypointIndex];
 
@@ -148,14 +157,7 @@ public class EnemyController : MonoBehaviour
                 rightPatrol = false;
             }
 
-            if (rightPatrol)
-            {
-                currentWaypointIndex++;
-            }
-            else
-            {
-                currentWaypointIndex--;
-            }
+            currentWaypointIndex += rightPatrol ? 1 : -1;
         }
 
         if (dir != Vector3.zero)
@@ -167,47 +169,66 @@ public class EnemyController : MonoBehaviour
 
     public void FleePlayer()
     {
-        dir = SteeringBehaviour.Flee(transform, player.transform.position);
+        if (currentTarget == null)
+        {
+            dir = Vector3.zero;
+            return;
+        }
+
+        dir = SteeringBehaviour.Flee(
+            transform,
+            currentTarget.transform.position
+        );
     }
 
     public void EvadePlayer()
     {
-        dir = SteeringBehaviour.Flee(transform, player.transform.position);
+        FleePlayer();
     }
 
     public void ArriveToPlayer()
     {
-        dir = SteeringBehaviour.Arrive(transform, player.transform.position, arriveRadius);
+        if (currentTarget == null)
+        {
+            dir = Vector3.zero;
+            return;
+        }
+
+        dir = SteeringBehaviour.Arrive(
+            transform,
+            currentTarget.transform.position,
+            arriveRadius
+        );
     }
 
     public void Pursue()
     {
-        Vector3 direction = player.transform.position - transform.position;
-        direction.y = 0;
+        if (currentTarget == null)
+        {
+            dir = Vector3.zero;
+            return;
+        }
 
-        Vector3 moveDirection = direction.normalized;
+        Vector3 direction =
+            currentTarget.transform.position - transform.position;
 
-        dir = moveDirection;
+        direction.y = 0f;
 
-        transform.forward = Vector3.Lerp(
-            transform.forward,
-            moveDirection,
-            Time.deltaTime * rotationSpeed
-        );
+        dir = direction.normalized;
     }
 
     public void Patrol()
     {
-        transform.Rotate(0, rotationSpeed * Time.deltaTime, 0);
+        transform.Rotate(0f, patrolRotationSpeed * Time.deltaTime, 0f);
+        dir = Vector3.zero;
     }
 
-    // Descansa hasta recuperar stamina.
     public void Rest()
     {
         counter += Time.deltaTime;
         dir = Vector3.zero;
 
-        if (los.IsRange(transform, player.transform))
+        if (currentTarget != null)
         {
             Seek();
         }
@@ -215,14 +236,19 @@ public class EnemyController : MonoBehaviour
         if (counter > timer)
         {
             stamina = maxStamina;
-            counter = 0;
-            return;
+            counter = 0f;
         }
     }
 
     public void Attack()
     {
-         RestartScene();    
+        if (currentTarget == null)
+            return;
+
+        currentTarget.Rescue();
+
+        currentTarget = null;
+        dir = Vector3.zero;
     }
 
     public void Wander()
@@ -231,7 +257,11 @@ public class EnemyController : MonoBehaviour
 
         if (wanderTime <= 0f)
         {
-            wanderDirection = SteeringBehaviour.Wander(wanderDirection, 180f);
+            wanderDirection = SteeringBehaviour.Wander(
+                wanderDirection,
+                180f
+            );
+
             wanderTime = WanderchangeInterval;
         }
 
@@ -240,24 +270,35 @@ public class EnemyController : MonoBehaviour
 
     public void Seek()
     {
-        dir = SteeringBehaviour.Seek(transform, player.transform.position);
-    }
-
-    // Aplica el movimiento final según la dirección que haya elegido el árbol.
-    private void Move(Vector3 dir)
-    {
-        if (rb == null)
+        if (currentTarget == null)
         {
+            dir = Vector3.zero;
             return;
         }
 
-        rb.linearVelocity = dir.normalized * speed;
+        dir = SteeringBehaviour.Seek(
+            transform,
+            currentTarget.transform.position
+        );
+    }
 
-        if (dir != Vector3.zero)
+    private void Move(Vector3 direction)
+    {
+        if (rb == null)
+            return;
+
+        float currentSpeed =
+            currentTarget != null
+                ? chasingSpeed
+                : speed;
+
+        rb.linearVelocity = direction.normalized * currentSpeed;
+
+        if (direction != Vector3.zero)
         {
             transform.forward = Vector3.Lerp(
                 transform.forward,
-                dir,
+                direction,
                 Time.deltaTime * rotationSpeed
             );
         }

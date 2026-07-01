@@ -11,6 +11,7 @@ public class FSMClasses : MonoBehaviour
     private AttackState attackState;
     private EvadeState evadeState;
     private RestState restState;
+    private ReturnToPatrolState returnToPatrolState;
 
     // Controlador del enemigo. También funciona con RouletteEnemyController porque hereda de EnemyControllerFSM.
     public EnemyControllerFSM enemy;
@@ -26,6 +27,7 @@ public class FSMClasses : MonoBehaviour
         attackState = new AttackState(this);
         evadeState = new EvadeState(this);
         restState = new RestState(this);
+        returnToPatrolState = new ReturnToPatrolState(this);
 
         currentState = patrolState;
         currentState.Enter();
@@ -82,5 +84,10 @@ public class FSMClasses : MonoBehaviour
     public void ToRest()
     {
         ChangeState(restState);
+    }
+
+    public void ToReturnToPatrol()
+    {
+        ChangeState(returnToPatrolState);
     }
 }

@@ -47,6 +47,17 @@ public class EnemyControllerFSM : MonoBehaviour
     [SerializeField] private LayerMask obstacleMask;
 
 
+    [Header("Visual")]
+    [SerializeField] private Renderer enemyRenderer;
+    private Material enemyMaterial;
+
+    [Header("Return To Patrol")]
+    [SerializeField] private float returnToPatrolSpeed = 5f;
+
+    private float normalSpeed;
+
+
+
     public bool HasStamina => currentStamina > 0f;
     public bool IsStaminaFull => currentStamina >= maxStamina;
 
@@ -54,7 +65,15 @@ public class EnemyControllerFSM : MonoBehaviour
     {
         fsm = GetComponent<FSMClasses>();
         los = GetComponent<LineOfSight>();
+
+        if (enemyRenderer != null)
+        {
+            enemyMaterial = enemyRenderer.material;
+        }
+
+        normalSpeed = speed;
     }
+
 
     protected virtual void Start()
     {
@@ -90,6 +109,18 @@ public class EnemyControllerFSM : MonoBehaviour
         }
 
         Move(dir);
+    }
+
+
+    //COLOR
+
+
+    public void SetColor(Color color)
+    {
+        if (enemyMaterial != null)
+        {
+            enemyMaterial.color = color;
+        }
     }
 
     public bool IsInDisadvantage()
@@ -338,6 +369,16 @@ public class EnemyControllerFSM : MonoBehaviour
         );
     }
 
+    public void UseReturnToPatrolSpeed()
+    {
+        speed = returnToPatrolSpeed;
+    }
+
+    public void ResetSpeed()
+    {
+        speed = normalSpeed;
+    }
+
     public void Flee()
     {
         if (player == null)
@@ -443,5 +484,26 @@ public class EnemyControllerFSM : MonoBehaviour
     {
         Scene currentScene = SceneManager.GetActiveScene();
         SceneManager.LoadScene(currentScene.name);
+    }
+
+
+
+    public void CalculatePathToCurrentPatrolWaypoint()
+    {
+        if (wayPoints == null || wayPoints.Length == 0)
+        {
+            StopMoving();
+            return;
+        }
+
+        Transform currentWaypoint = wayPoints[currentWaypointIndex];
+
+        if (currentWaypoint == null)
+        {
+            StopMoving();
+            return;
+        }
+
+        CalculatePathTo(currentWaypoint.position);
     }
 }
